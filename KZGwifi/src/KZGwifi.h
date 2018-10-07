@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
+#include <WiFiClient.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <KZGconfigFile.h>
@@ -40,8 +41,8 @@ typedef enum {
 
 class KZGwifi
 {
-
-KZGconfigFile configFile;
+String _confFileStr="/KZGwifi.json";
+KZGconfigFile _kzgConfigFile;
 //// wifi udp  ntp
 WiFiUDP ntpUDP;
 // By default 'time.nist.gov' is used with 60 seconds update interval and
@@ -67,14 +68,22 @@ String ssidTab[MAX_SSID];
 String pwdTab[MAX_SSID];
 uint8_t ileSSID=0;
 
+//WiFiClient clientAP;
+String apName="apName";
+String apPwd="apPwd";
+
 uint8_t lastConnectedStatus;
   
 public:
   KZGwifi(){};
-  void begin();
+  void begin(String conffile="/KZGwifi.json");
   void loop();
+  String loadConfigFile();
   bool wifiConnected();
-  bool getWifiStatusString(char *b);
+  String getWifiStatusString();
+  void initAP(String ssid,String pwd);
+  bool getWifiStatusBuf(char *b);
+  uint8_t saveConfigFile(String confStr);
   //int getConStat(){return conStat;};
   String getTimeString(){return timeClient->getFormattedTime();};
   unsigned long getEpochTime(){return timeClient->getEpochTime();};
@@ -83,10 +92,11 @@ public:
   void setNTP(String host,unsigned long offset_h);
   String getNTPjsonStr(){ return  String("{\"host\":\""+ntp_server+"\",\"offset\":"+String(ntp_offset_h)+"}");};
  // String getWifijsonStr(){ return String("{\"ssid\":\""+wifi_ssid+"\",\"pwd\":\""+wifi_pwd+"\",\"ip\":\""+wifi_ip+"\",\"tryb\":\""+wifi_tryb+"\"}");};
-  void dodajAP(String ssid,String pwd);
+  void dodajAP(String ssid,String pwd, bool dodajNaKoniec=true);
   void dodajAP(String jsonString);  
   void usunAP(String ssid);
   String getConfigStr();
   void parseConfigStr(String confStr);
+  void clearAPList();
 };
 #endif
