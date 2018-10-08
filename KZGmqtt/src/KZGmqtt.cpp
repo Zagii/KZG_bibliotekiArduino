@@ -2,22 +2,25 @@
 
 void KZGmqtt::begin(String confFileStr)
 {
-  _client.setClient(_espClient);
+  _clientMqtt.setClient(_espClient);
   _confFileStr = confFileStr;
   _kzgConfigFile.begin(_confFileStr);
 }
 
-void KZGmqtt::setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd)
+void KZGmqtt::setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic)
 {
   _mqttServer = mqttServer;  _mqttPort = mqttPort;
   _mqttUser = mqttUser;      _mqttPwd = mqttPwd;
-  _client.setServer(_mqttServer.c_str(), _mqttPort);
+  _inTopic=inTopic;          _outTopic=outTopic;
+  _debugTopic=debugTopic;
+  _clientMqtt.setServer(_mqttServer.c_str(), _mqttPort);
 }
 void KZGmqtt::setCallback(MQTT_CALLBACK_SIGNATURE) {
     _clientMqtt.setCallback(callback);
 }
-bool KZGmqtt:reconnectMQTT()
+bool KZGmqtt::reconnectMQTT()
 {
+  
   bool cliCon;
   if(_mqttUser == "") return false;
   if(_mqttPwd == "")
@@ -31,23 +34,21 @@ bool KZGmqtt:reconnectMQTT()
     strcpy(s,_inTopic.c_str());
     strcat(s,"\/#");  
     _clientMqtt.subscribe(s);
-    String bStr="reconnectMQTT, subskrybcja do: "+s;
+    String bStr="reconnectMQTT, subskrybcja do: "+String(s);
     mqttPub(_debugTopic,bStr);
   }
-  return client.connected();
+  return _clientMqtt.connected();
 }
 
 void KZGmqtt::mqttPub(String topic,String msg,bool cisza)
 {
   if(!cisza){
-    DPRINT("Debug String KZGmqtt::mqttPub, topic=");  DPRINT(topic); DPRINT(", msg=");  DPRINT(msg);
+    DPRINT("Debug String KZGmqtt::mqttPub, topic=");  DPRINT(topic); DPRINT(", msg=");  DPRINTLN(msg);
   }
   if(_clientMqtt.connected())
   {
 	  _clientMqtt.publish(topic.c_str(),msg.c_str());
-    if(!cisza){
-      DPRINT( "[");DPRINT(timeClient->getFormattedTime());DPRINT("] ");DPRINTLN(timeClient->getEpochTime());
-      }
+   
    }else
    {
 	   if(!cisza){DPRINTLN(" nie wysylam, brak polaczenia");}
@@ -75,7 +76,7 @@ String KZGmqtt::getConfigStr()
   mq["debugTopic"] = _debugTopic;
   String wynik;
   root.printTo(wynik);
-  DPRINTF(F("KZGmqtt::getConfigStr: "));DPRINTLN(wynik);
+  DPRINT(F("KZGmqtt::getConfigStr: "));DPRINTLN(wynik);
   return wynik;
 }
 
@@ -91,12 +92,12 @@ void KZGmqtt::parseConfigStr(String confStr)
      return;
   }
   JsonObject& mq=root["MQTT"];
-  _mqttServer = mq["mqttServer"];  _mqttPort = mq["mqttPort"];
-  _mqttUser   = mq["mqttUser"];    _mqttPwd = mq["mqttPwd"];
-  _inTopic    = mq["inTopic"];     _outTopic = mq["outTopic"];
-  _debugTopic = mq["debugTopic"];
+  _mqttServer = mq["mqttServer"].as<char*>();  _mqttPort = mq["mqttPort"];
+  _mqttUser   = mq["mqttUser"].as<char*>();    _mqttPwd = mq["mqttPwd"].as<char*>();
+  _inTopic    = mq["inTopic"].as<char*>();     _outTopic = mq["outTopic"].as<char*>();
+  _debugTopic = mq["debugTopic"].as<char*>();
   
-  DPRINT(F("Koniec parseConfigStr, ileSSID = ")); DPRINTLN(ileSSID);
+  DPRINTLN(F("Koniec parseConfigStr "));
 }
 
 void KZGmqtt::loop()
@@ -104,9 +105,13 @@ void KZGmqtt::loop()
   if (millis() - lastMQTTReconnectAttempt > 5000)
   {
     lastMQTTReconnectAttempt = millis();
-    if (reconnectMQTT())
+    if(!_clientMqtt.connected())
     {
+      if (reconnectMQTT())
+      {
+      }
     }
+    DPRINT(_mqttUser);DPRINT(F(" / "));DPRINTLN(_mqttPwd); DPRINT(F("MQTT status: "));DPRINTLN(_clientMqtt.state());
   }
   /*if(loopMillis%600000==0) //10 min wysyłaj pingi watchdoga cyklicznie 
            {

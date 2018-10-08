@@ -30,7 +30,7 @@ WiFiClient _espClient;
 PubSubClient _clientMqtt;
 String _mqttServer="";
 String _mqttUser="";
-String _mqttPwd=""
+String _mqttPwd="";
 uint16_t _mqttPort=1883;
 
 String _inTopic="";
@@ -42,11 +42,12 @@ public:
   void begin(String confFileStr = "/KZGmqtt.json");
   void loop();
   bool reconnectMQTT();
-  void setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd);
+  void setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic);
   void setCallback(MQTT_CALLBACK_SIGNATURE);
   uint8_t saveConfigFile(String confStr);
   String loadConfigFile();
   String getConfigStr();
   void parseConfigStr(String confStr);
+  void mqttPub(String topic, String msq, bool cisza=false);
 };
 #endif
