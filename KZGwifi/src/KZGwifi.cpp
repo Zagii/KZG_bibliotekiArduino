@@ -1,9 +1,22 @@
 #include "KZGwifi.h"
 
-void KZGwifi::wifiReconnect()
-{
-  DPRINT(F("KZGwifi::wifiReconnect, ileSSID=")); DPRINTLN(ileSSID);
 
+
+void KZGwifi::wifiReconnect(bool force=false)
+{
+   DPRINT(F("KZGwifi::wifiReconnect, ileSSID=")); DPRINTLN(ileSSID);
+
+  if(force)
+  {
+    DPRINTLN(F("  Force disconnect WIFI"));
+    WiFi.disconnect();
+    delay(30);
+  }
+  if(status == WL_CONNECTED) return;
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssidTab[idSSID],pwdTab[idSSID]);
+ 
   if(wifiMulti) delete wifiMulti;
   lastConnectedStatus=WL_IDLE_STATUS;
   wifiMulti=new ESP8266WiFiMulti();
@@ -236,11 +249,12 @@ void KZGwifi::initAP(String ssid,String pwd)
 }
 bool KZGwifi::wifiConnected()
 {
- if (wifiMulti->run()==WL_CONNECTED)
+ uint8_t status = WiFi.status();
+ if (status == WL_CONNECTED)
  {
-   if(lastConnectedStatus!=WL_CONNECTED)  //wylapanie momentu zestawienia polaczenia
+   if(lastConnectedStatus != WL_CONNECTED)  //wylapanie momentu zestawienia polaczenia
    {
-     lastConnectedStatus=WL_CONNECTED;
+     lastConnectedStatus = WL_CONNECTED;
      char buf[100];
      getWifiStatusBuf(buf);
      DPRINTLN(buf);
@@ -249,11 +263,11 @@ bool KZGwifi::wifiConnected()
  }
  else 
  {
-   if(lastConnectedStatus==WL_CONNECTED)
+   if(lastConnectedStatus == WL_CONNECTED)
    {
      DPRINTLN(F("KZGwifi->Disconnected!!"));
    }
-   lastConnectedStatus=WL_IDLE_STATUS;
+   lastConnectedStatus = status;
    return false;
  }
 }
