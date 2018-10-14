@@ -4,27 +4,46 @@
 
 void KZGwifi::wifiReconnect(bool force=false)
 {
-   DPRINT(F("KZGwifi::wifiReconnect, ileSSID=")); DPRINTLN(ileSSID);
-
+  
   if(force)
   {
     DPRINTLN(F("  Force disconnect WIFI"));
     WiFi.disconnect();
     delay(30);
   }
-  if(status == WL_CONNECTED) return;
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssidTab[idSSID],pwdTab[idSSID]);
- 
-  if(wifiMulti) delete wifiMulti;
-  lastConnectedStatus=WL_IDLE_STATUS;
-  wifiMulti=new ESP8266WiFiMulti();
-  for(uint8_t i=0; i<ileSSID; i++)
+  if(WiFi.status() == WL_CONNECTED) return;
+  if(ileSSID <= 0) return;
+  
+  if(millis() - probaReconnectMS> CO_ILE_RECONNECT)
   {
-    wifiMulti->addAP(ssidTab[i].c_str(), pwdTab[i].c_str());
+     DPRINT(F("KZGwifi::wifiReconnect, ileSSID=")); DPRINTLN(ileSSID);
+     probaReconnectMS = millis();
+     nrProbyReconnect ++;
+     lastConnectedStatus=WL_IDLE_STATUS;
+     
+     DPRINT(F("  probaReconnect: ")); DPRINTLN(nrProbyReconnect);
+
+     if(nrProbyReconnect >= ILE_PROB_RECONNECT)
+     {
+       idSSID ++;
+       nrProbyReconnect = 0;
+       if(idSSID >= MAX_SSID || idSSID >= ileSSID)
+       {
+         idSSID = 0;
+       }
+       DPRINT(F("  zmiana SSID na ID: ")); DPRINT(idSSID);DPRINT(F(" z ")); DPRINTLN(ileSSID);
+     }
+     
+     if(ileSSID > 0)
+     {
+        DPRINT(F("  laczenie z SSID: ")); DPRINT(ssidTab[idSSID]);
+        DPRINT(F(", pwd: ")); DPRINTLN(pwdTab[idSSID]);
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(ssidTab[idSSID].c_str(),pwdTab[idSSID].c_str());
+       
+        delay(1000);
+     }
   }
-  delay(1000);
 }
 void KZGwifi::setNTP(String host,unsigned long offset_h)
 {
@@ -45,7 +64,7 @@ void KZGwifi::dodajAP(String jsonString)
   JsonObject& js= jsonBuffer.parse(jsonString);
   if (!js.success()) 
   {
-    DPRINTLN("Blad parsowania zmianyAP");
+    DPRINTLN(F(" ** Blad parsowania zmianyAP"));
     return;
   }
   if(js.containsKey("ssid"))
@@ -60,7 +79,7 @@ void KZGwifi::dodajAP(String jsonString)
 }
 void KZGwifi::dodajAP(String ssid,String pwd, bool dodajNaKoniec)
 {
-  DPRINT(F("KZGwifi::dodajAP: ")); DPRINT(ssid);
+  DPRINT(F("  KZGwifi::dodajAP: ")); DPRINT(ssid);
   DPRINT(F(" pwd: ")); DPRINTLN(pwd);
   
   // przed dodaniej ssid usuwamy wszystkie ssid o tej nazwie
@@ -68,39 +87,42 @@ void KZGwifi::dodajAP(String ssid,String pwd, bool dodajNaKoniec)
   usunAP(ssid);
   if(ileSSID>=MAX_SSID) 
   {
-    DPRINTLN(F("Za duzo SSID nie moge dodac nowego"));
+    DPRINTLN(F("    Za duzo SSID nie moge dodac nowego"));
     return;
   }
   // przesuwamy tablice o jeden by nowy ssid wpadl na poczatek
-  for(uint8_t i=ileSSID; i > 0; i--)
-  {
-    ssidTab[i]=ssidTab[i-1];
-    pwdTab[i]=pwdTab[i-1];
-  }
+  
   if(dodajNaKoniec)
   {
-    ssidTab[0]=ssid;
-    pwdTab[0]=pwd;
+    ssidTab[ileSSID]=ssid;
+    pwdTab[ileSSID]=pwd;    
   }else
   {
-    ssidTab[ileSSID]=ssid;
-    pwdTab[ileSSID]=pwd;
+    for(uint8_t i=ileSSID; i > 0; i--)
+    {
+       ssidTab[i]=ssidTab[i-1];
+      pwdTab[i]=pwdTab[i-1];
+    }
+    ssidTab[0]=ssid;
+    pwdTab[0]=pwd;
   }
   ileSSID++;
-  wifiReconnect();
-  DPRINT(F("Koniec dodawania, ileSSID = ")); DPRINTLN(ileSSID); 
+ // wifiReconnect();
+  DPRINT(F("  Koniec dodawania, ileSSID = ")); DPRINTLN(ileSSID); 
+  DPRINTLN(getConfigStr());
 }
 /* usuwa wszystkie AP o zadanym SSID */
 void KZGwifi::usunAP(String ssid)
 {
-  DPRINT(F("KZGwifi::usunAP: ")); DPRINT(ssid);
-  DPRINT(F(" ileSSID = ")); DPRINTLN(ileSSID);
+  DPRINT(F("    KZGwifi::usunAP: ")); DPRINT(ssid);
+  DPRINT(F("   ileSSID = ")); DPRINTLN(ileSSID);
   if(ileSSID == 0) return;
  
   for(int i=0; i < ileSSID; i++)
   {
     if(ssidTab[i] == ssid)
     {
+       DPRINT(F("      znalezionoAP: ")); DPRINT(ssid);
        for(int y = i; y < ileSSID-1; y++)
        {  
           ssidTab[y] = ssidTab[y+1];
@@ -111,29 +133,29 @@ void KZGwifi::usunAP(String ssid)
        ileSSID--;
     }
   }
-  DPRINT(F("Koniec usuwania, ileSSID = ")); DPRINTLN(ileSSID);
+  DPRINT(F("    Koniec usuwania, ileSSID = ")); DPRINTLN(ileSSID);
 }
 void KZGwifi::clearAPList()
 {
-  DPRINTLN(F("KZGwifi::clearAPList"));
+  DPRINTLN(F("  KZGwifi::clearAPList"));
   while(ileSSID>0)
   {
     usunAP(ssidTab[0]);
   }
-  DPRINT(F("Koniec clearAPList, ileSSID = ")); DPRINTLN(ileSSID);
+  DPRINT(F("  Koniec clearAPList, ileSSID = ")); DPRINTLN(ileSSID);
 
 }
 
 void KZGwifi::begin(String confFile)
 {
-  DPRINTLN("Debug KZGwifi::begin start"); 
+  DPRINTLN("  Debug KZGwifi::begin start"); 
   _confFileStr=confFile;
   _kzgConfigFile.begin(_confFileStr);
   //WiFi.mode(WIFI_AP_STA);
-  WiFi.mode(WIFI_STA);
-  //wifiReconnect();
+  //WiFi.mode(WIFI_STA);
+  wifiReconnect(true);
   setNTP("europe.pool.ntp.org",ntp_offset_h);
-  DPRINTLN("Debug KZGwifi::begin end"); 
+  DPRINTLN("  Debug KZGwifi::begin end"); 
 }
 String KZGwifi::loadConfigFile()
 {
@@ -152,7 +174,7 @@ String KZGwifi::getWifiStatusString()
     wynik = "WiFi connected: "+WiFi.SSID()+", IP: "+ ip[0]+"."+ip[1]+"."+ip[2]+"."+ip[3];
   }else
   {
-    wynik = "Wifi Connection Error. status= "+wifiMulti->run();
+    wynik = "Wifi Connection Error. status= "+WiFi.status();
   }
   return wynik;
 }
@@ -165,7 +187,7 @@ bool KZGwifi::getWifiStatusBuf(char *b)
     return true;
   }else
   {
-    sprintf(b,"Wifi Connection Error. status= %d",wifiMulti->run());
+    sprintf(b,"Wifi Connection Error. status= %d",WiFi.status());
     return false; 
   }
 }
@@ -213,13 +235,13 @@ String KZGwifi::getConfigStr()
 }
 void KZGwifi::parseConfigStr(String confStr)
 {
-  DPRINT(F("KZGwifi::parseConfigStr: ")); DPRINTLN(confStr);
+  DPRINT(F("  KZGwifi::parseConfigStr: ")); DPRINTLN(confStr);
 
   DynamicJsonBuffer jb;
   JsonObject& root = jb.parseObject(confStr);
   if (!root.success())
   {
-     DPRINT(F("Blad parsowania confStr"));
+     DPRINT(F("    Blad parsowania confStr"));
      return;
   }
   JsonArray& staArr=root["STA"];
@@ -230,11 +252,11 @@ void KZGwifi::parseConfigStr(String confStr)
     dodajAP(js["ssid"], js["pwd"],true);  
   } 
   initAP(root["AP"]["ssid"].as<char*>(), root["AP"]["pwd"].as<char*>());
-  DPRINT(F("Koniec parseConfigStr, ileSSID = ")); DPRINTLN(ileSSID);
+  DPRINT(F("  Koniec parseConfigStr, ileSSID = ")); DPRINTLN(ileSSID);
 }
 void KZGwifi::initAP(String ssid,String pwd)
 {
-  DPRINT(F("KZGwifi::initAP "));DPRINTLN(ssid);
+  DPRINT(F("  KZGwifi::initAP "));DPRINTLN(ssid);
   apName = ssid;
   apPwd = pwd;
 
@@ -245,7 +267,7 @@ void KZGwifi::initAP(String ssid,String pwd)
   //IPAddress apIP(192,168,1,1);               // The IP address of the access point
  // WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
   //WiFi.softAP(apName.c_str(), apPwd.c_str());
-  DPRINT(F("KZGwifi::initAP -koniec "));DPRINTLN(apName);
+  DPRINT(F("  KZGwifi::initAP -koniec "));DPRINTLN(apName);
 }
 bool KZGwifi::wifiConnected()
 {
@@ -255,9 +277,9 @@ bool KZGwifi::wifiConnected()
    if(lastConnectedStatus != WL_CONNECTED)  //wylapanie momentu zestawienia polaczenia
    {
      lastConnectedStatus = WL_CONNECTED;
-     char buf[100];
-     getWifiStatusBuf(buf);
-     DPRINTLN(buf);
+     nrProbyReconnect = 0;                  //zerowanie licznika reconnectów
+     DPRINT(F("  ** "));
+     DPRINTLN(getWifiStatusString());
    }
    return true; 
  }
@@ -265,8 +287,8 @@ bool KZGwifi::wifiConnected()
  {
    if(lastConnectedStatus == WL_CONNECTED)
    {
-     DPRINTLN(F("KZGwifi->Disconnected!!"));
-   }
+     DPRINTLN(F("  ** KZGwifi->Disconnected!!"));
+   } 
    lastConnectedStatus = status;
    return false;
  }

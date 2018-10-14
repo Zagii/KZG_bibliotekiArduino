@@ -21,11 +21,13 @@ void setup()
         wifi.dodajAP("test","aaa");
         wifi.dodajAP("UPC Wi-Free","");
         wifi.dodajAP("DOrangeFreeDom","KZagaw01_ruter_key");
+       
         wifi.initAP("TestWifiAP","qwerty");
         //save config
         conf = wifi.getConfigStr();
         Serial.println("Zapis konfiguracji: "+wifi.saveConfigFile(conf));
-    }else
+    }
+    else
     {
         Serial.print("Wczytywanie konfiguracji");
         wifi.parseConfigStr(conf);
@@ -40,8 +42,8 @@ void loop()
     wifi.loop();
     if(millis()-m>15000)
     {
-        Serial.print("## ");Serial.print(wifi.getWifiStatusString());Serial.println(" ##");
-        Serial.print("#### ");Serial.print(wifi.getTimeString());Serial.println(" ####");
+        Serial.print("## ");Serial.print(wifi.getWifiStatusString());
+        Serial.print(" #### ");Serial.print(wifi.getTimeString());Serial.println(" ####");
         m=millis();
     }
 }
