@@ -77,6 +77,35 @@ void KZGwifi::dodajAP(String jsonString)
     }
   }
 }
+bool KZGwifi::importFromFile()
+{
+    String conf = loadConfigFile();
+    if(conf == "")  //brak pliku konfiguracyjnego
+    {
+        conf = getConfigStr();
+        if(conf != "")
+        {
+          uint8_t saveStatus = saveConfigFile(conf);
+          DPRINT(F("  Zapis konfiguracji: "));
+          DPRINTLN(saveStatus);
+          if(saveStatus == KZGCONFFILE_SAVE_OK)
+              return true;
+          else
+              return false;
+        }
+        else 
+        {
+          DPRINTLN(F("  Brak domyslnych AP"));
+          return false;
+        }
+    }
+    else
+    {
+        DPRINTLN(F("  Wczytywanie konfiguracji"));
+        parseConfigStr(conf);
+        return true;
+    }
+}
 void KZGwifi::dodajAP(String ssid,String pwd, bool dodajNaKoniec)
 {
   DPRINT(F("  KZGwifi::dodajAP: ")); DPRINT(ssid);

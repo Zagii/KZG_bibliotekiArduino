@@ -12,26 +12,15 @@ void setup()
 {
     Serial.begin(115200);
     wifi.begin();
-    String conf=wifi.loadConfigFile();
-    if(conf == "")  //brak pliku konfiguracyjnego
-    {
-        Serial.print("Przygotuj domyslny config");
-        wifi.dodajAP("abc","cde");
-        wifi.dodajAP("abc","123");
-        wifi.dodajAP("test","aaa");
-        wifi.dodajAP("UPC Wi-Free","");
-        wifi.dodajAP("DOrangeFreeDom","KZagaw01_ruter_key");
-       
-        wifi.initAP("TestWifiAP","qwerty");
-        //save config
-        conf = wifi.getConfigStr();
-        Serial.println("Zapis konfiguracji: "+wifi.saveConfigFile(conf));
-    }
-    else
-    {
-        Serial.print("Wczytywanie konfiguracji");
-        wifi.parseConfigStr(conf);
-    }
+    // ustawienie domyślnych AP
+    Serial.print("Przygotuj domyslny config");
+    wifi.dodajAP("abc","cde");
+    wifi.dodajAP("DOrangeFreeDom","KZagaw01_ruter_key"); 
+    wifi.initAP("TestWifiAP","qwerty");
+    
+    //wczytanie konfiguracji i ew zastapienie domyślnych ustawien
+    wifi.importFromFile();
+    
     
     Serial.println("Koniec Setup"); 
 }

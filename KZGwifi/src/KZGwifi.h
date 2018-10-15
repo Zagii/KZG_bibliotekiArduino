@@ -87,6 +87,8 @@ public:
   void initAP(String ssid,String pwd);
   bool getWifiStatusBuf(char *b);
   uint8_t saveConfigFile(String confStr);
+  bool importFromFile();
+  
   //int getConStat(){return conStat;};
   String getTimeString(){return timeClient->getFormattedTime();};
   unsigned long getEpochTime(){return timeClient->getEpochTime();};
