@@ -45,6 +45,7 @@ public:
   void setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic);
   void setCallback(MQTT_CALLBACK_SIGNATURE);
   uint8_t saveConfigFile(String confStr);
+  bool importFromFile();
   String loadConfigFile();
   String getConfigStr();
   void parseConfigStr(String confStr);

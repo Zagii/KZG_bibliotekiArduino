@@ -16,6 +16,8 @@ void KZGmqtt::setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, Stri
   _clientMqtt.setServer(_mqttServer.c_str(), _mqttPort);
 }
 void KZGmqtt::setCallback(MQTT_CALLBACK_SIGNATURE) {
+  Serial.println("przypisanie callback");
+  callback(NULL,NULL,0);
     _clientMqtt.setCallback(callback);
 }
 bool KZGmqtt::reconnectMQTT()
@@ -64,7 +66,35 @@ uint8_t KZGmqtt::saveConfigFile(String confStr)
 {
   return _kzgConfigFile.saveConfigFile(confStr);
 }
-
+bool KZGmqtt::importFromFile()
+{
+    String conf = loadConfigFile();
+    if(conf == "")  //brak pliku konfiguracyjnego
+    {
+        conf = getConfigStr();
+        if(conf != "")
+        {
+          uint8_t saveStatus = saveConfigFile(conf);
+          DPRINT(F("  Zapis konfiguracji MQTT: "));
+          DPRINTLN(saveStatus);
+          if(saveStatus == KZGCONFFILE_SAVE_OK)
+              return true;
+          else
+              return false;
+        }
+        else 
+        {
+          DPRINTLN(F("  Brak domyslnych konfiguracji MQTT"));
+          return false;
+        }
+    }
+    else
+    {
+        DPRINTLN(F("  Wczytywanie konfiguracji MQTT"));
+        parseConfigStr(conf);
+        return true;
+    }
+}
 String KZGmqtt::getConfigStr()
 {
   DynamicJsonBuffer jb;
