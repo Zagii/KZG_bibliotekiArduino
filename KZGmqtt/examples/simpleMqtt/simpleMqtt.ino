@@ -10,10 +10,8 @@
 KZGwifi wifi;
 KZGmqtt mqtt;
 
-void MQTTcallback(char* topic, byte* payload, unsigned int length) 
+void callback(char* topic, byte* payload, unsigned int length) 
 {
-    Serial.println("callback srodek");
-    return;
   char* p = (char*)malloc(length+1);
   memcpy(p,payload,length);
   p[length]='\0';
@@ -31,10 +29,10 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   }*/
     if(topic[strlen(topic)-1]=='/')
         {topic[strlen(topic)-1] = '\0';}
-    DPRINT("Debug: callback topic=");
-    DPRINT(topic);
-    DPRINT(" msg=");
-    DPRINTLN(p);
+    Serial.print("@@@@ Debug: MQTTcallback topic=");
+    Serial.print(topic);
+    Serial.print(" msg=");
+    Serial.println(p);
     //parsujRozkaz(topic,p);
   free(p);
 }
@@ -46,8 +44,9 @@ void setup()
     wifi.begin();
     // ustawienie domyślnych AP
     Serial.print("Przygotuj domyslny config");
-    wifi.dodajAP("abc","cde");
-    wifi.dodajAP("DOrangeFreeDom","KZagaw01_ruter_key"); 
+  //  wifi.dodajAP("abc","cde");
+  //  wifi.dodajAP("DOrangeFreeDom","KZagaw01_ruter_key"); 
+    wifi.dodajAP("KZG276BE76","s6z8rdsTmtrpff");
     wifi.initAP("TestWifiAP","qwerty");
     
     //wczytanie konfiguracji i ew zastapienie domyślnych ustawien
@@ -56,10 +55,12 @@ void setup()
 
     //////////////////////////// mqtt /////////////////////////////////
     mqtt.begin();
-    mqtt.setCallback(MQTTcallback);
+    mqtt.setCallback(callback);
     // domyślna konfiguracja
     Serial.print("Przygotuj domyslny config MQTT");
-    mqtt.setMqtt("broker.hivemq.com",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
+    mqtt.setMqtt("broker.hivemq.com",1883,"KZGmqttTest","","","KZGmqttDebug");
+
+    mqtt.addSubscribeTopic("KZGmqttTestIN/#");
     mqtt.importFromFile();
     ////////////////////////////////////////////////////////////////////
     Serial.println("Koniec Setup"); 
