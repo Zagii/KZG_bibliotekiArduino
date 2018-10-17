@@ -26,13 +26,22 @@ typedef enum {
 */
 
 
-//#define DEBUG_WIFI   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+#undef DEBUG_WIFI   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
 #ifdef DEBUG_WIFI    //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
   #define DPRINTLN(...)  Serial.println(__VA_ARGS__)   //DPRINTLN is a macro, debug print with new line
 #else
   #define DPRINT(...)     //now defines a blank line
   #define DPRINTLN(...)   //now defines a blank line
+#endif
+
+#define INFO_WIFI
+#ifdef INFO_WIFI    //Macros are usually in all capital letters.
+  #define IPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
+  #define IPRINTLN(...)  Serial.println(__VA_ARGS__)   //DPRINTLN is a macro, debug print with new line
+#else
+  #define IPRINT(...)     //now defines a blank line
+  #define IPRINTLN(...)   //now defines a blank line
 #endif
 
 #define MAX_SSID 8
@@ -61,7 +70,7 @@ String wifi_tryb;
 //unsigned long loopMillis=0;
   
 //ESP8266WiFiMulti *wifiMulti;
-WiFiClient espClient;
+//WiFiClient espClient;
 
 String ssidTab[MAX_SSID];
 String pwdTab[MAX_SSID];

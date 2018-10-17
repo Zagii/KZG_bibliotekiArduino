@@ -36,8 +36,8 @@ void KZGwifi::wifiReconnect(bool force=false)
      
      if(ileSSID > 0)
      {
-        DPRINT(F("  laczenie z SSID: ")); DPRINT(ssidTab[idSSID]);
-        DPRINT(F(", pwd: ")); DPRINTLN(pwdTab[idSSID]);
+        IPRINT(F("  laczenie z SSID: ")); IPRINT(ssidTab[idSSID]);
+        IPRINT(F(", pwd: ")); DPRINTLN(pwdTab[idSSID]);
         WiFi.mode(WIFI_STA);
         WiFi.begin(ssidTab[idSSID].c_str(),pwdTab[idSSID].c_str());
        
@@ -307,8 +307,8 @@ bool KZGwifi::wifiConnected()
    {
      lastConnectedStatus = WL_CONNECTED;
      nrProbyReconnect = 0;                  //zerowanie licznika reconnectów
-     DPRINT(F("  ** "));
-     DPRINTLN(getWifiStatusString());
+     IPRINT(F("  ** "));
+     IPRINTLN(getWifiStatusString());
    }
    return true; 
  }
@@ -316,7 +316,7 @@ bool KZGwifi::wifiConnected()
  {
    if(lastConnectedStatus == WL_CONNECTED)
    {
-     DPRINTLN(F("  ** KZGwifi->Disconnected!!"));
+     IPRINTLN(F("  ** KZGwifi->Disconnected!!"));
    } 
    lastConnectedStatus = status;
    return false;

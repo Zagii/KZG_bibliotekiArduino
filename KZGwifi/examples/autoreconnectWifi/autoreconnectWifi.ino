@@ -19,8 +19,7 @@ void setup()
     wifi.initAP("TestWifiAP","qwerty");
     
     //wczytanie konfiguracji i ew zastapienie domyślnych ustawien
-    wifi.importFromFile();
-    
+    wifi.importFromFile();  
     
     Serial.println("Koniec Setup"); 
 }
