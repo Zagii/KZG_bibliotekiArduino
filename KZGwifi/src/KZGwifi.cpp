@@ -37,7 +37,7 @@ void KZGwifi::wifiReconnect(bool force=false)
      if(ileSSID > 0)
      {
         IPRINT(F("  laczenie z SSID: ")); IPRINT(ssidTab[idSSID]);
-        IPRINT(F(", pwd: ")); DPRINTLN(pwdTab[idSSID]);
+        IPRINT(F(", pwd: ")); IPRINTLN(pwdTab[idSSID]);
         WiFi.mode(WIFI_STA);
         WiFi.begin(ssidTab[idSSID].c_str(),pwdTab[idSSID].c_str());
        
