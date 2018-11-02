@@ -33,12 +33,14 @@ class KZGwiatrak
 	unsigned long _tachoOstPredkosc=0;	//obr/min
 	unsigned long _ms=0; //millisy w loop
 	uint8_t _zadanaPredkoscProcent=0;
+  uint8_t _id;
 
     public:
-        KZGwiatrak(uint8_t pin_pwm,uint8_t pin_tacho)
+        KZGwiatrak(uint8_t pin_pwm,uint8_t pin_tacho,uint8_t id)
         {
             _pin_pwm=pin_pwm;
             _pin_tacho=pin_tacho;
+            _id=id;
         }
         void begin();
         void obslugaTachoISR();
@@ -47,6 +49,7 @@ class KZGwiatrak
         uint8_t dajZadanaPredkoscProcent(){return _zadanaPredkoscProcent;}
         unsigned long dajOstPredkosc(){return _tachoOstPredkosc;}
         uint8_t dajISR() {return _pin_tacho;}
+        String getStatusString();
 };
 
 #endif
