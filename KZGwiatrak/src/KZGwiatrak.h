@@ -2,7 +2,7 @@
 #define KZGwiatrak_h
 #include "arduino.h"
 #define KZG_TACHO_CZAS_SEK 1
-#define KZG_TACHO_CZAS_MS (TACHO_CZAS_SEK*1000)
+#define KZG_TACHO_CZAS_MS (KZG_TACHO_CZAS_SEK*1000)
 
 #define MAX_PWM 100
 

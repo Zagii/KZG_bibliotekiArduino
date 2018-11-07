@@ -31,7 +31,7 @@ void KZGwiatrak::loop()
 String KZGwiatrak::getStatusString()
 {
   String r="{ \"wiatrakid\":\""+String(_id)+"\", \"setProcent\":\""+dajZadanaPredkoscProcent()+"\",";
-  r+="\"rpm\":\""+dajOstPredkosc()+"\"}";
+  r+="\"rpm\":\""+String(dajOstPredkosc())+"\"}";
   return r;
 }
 void KZGwiatrak::ustawPredkosc(uint8_t procent)
