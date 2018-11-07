@@ -19,13 +19,13 @@ void KZGrekuKomora::begin(OneWire* oneWire)
     sensors.begin();  
   }*/
   //if (!sensors.getAddress(termometrAddr[_id], _id))
-  if(!_dsTermometr.isConnected(_termAddr))
+  if(!_dsTermometr.isConnected(*_termAddr))
   {
      DPRINT(__func__);DPRINT(" problem z termometrem id=");DPRINTLN(_id);
       
   }
-  printAddress(_termAddr,addressStr);
-  _dsTermometr.setResolution(_termAddr, TEMPERATURE_PRECISION);
+  printAddress(*_termAddr,addressStr);
+  _dsTermometr.setResolution(*_termAddr, TEMPERATURE_PRECISION);
   _tempMillis=millis();
 }
 void KZGrekuKomora::pomiarTemp()
@@ -33,8 +33,8 @@ void KZGrekuKomora::pomiarTemp()
   if(millis()-_tempMillis>5000)
   {
     _tempMillis=millis();
-    _dsTermometr.requestTemperaturesByAddress(_termAddr);
-    _temp = _dsTermometr.getTempC(_termAddr);
+    _dsTermometr.requestTemperaturesByAddress(*_termAddr);
+    _temp = _dsTermometr.getTempC(*_termAddr);
    
     DPRINT(__func__);DPRINT(" komoraID=");DPRINT(_id);DPRINT(" temp=");DPRINTLN(_temp);
   }
@@ -61,7 +61,7 @@ void KZGrekuKomora::printAddress(DeviceAddress deviceAddress,char * buf)
 String KZGrekuKomora::getStatusString()
 {
   String r="{ \"komoraid\":\""+String(_id)+"\", \"ds_addr\":\""+String(addressStr)+"\",";
-  r+="\"temp\":\""+_temp+"\"}";
+  r+="\"temp\":\""+String(_temp)+"\"}";
   return r;
 }
 
