@@ -6,8 +6,8 @@
 
 #define MAX_PWM 100
 
-//#define DEBUG_KZGWIATRAK
-#undef DEBUG_KZGWIATRAK   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+#define DEBUG_KZGWIATRAK
+//#undef DEBUG_KZGWIATRAK   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
 #ifdef DEBUG_KZGWIATRAK    //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
   #define DPRINTLN(...)  Serial.println(__VA_ARGS__)   //DPRINTLN is a macro, debug print with new line
