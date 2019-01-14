@@ -7,7 +7,7 @@
 #include <DallasTemperature.h>
 
 //#define PIN_ONEWIRE D7
-#define TEMPERATURE_PRECISION 12//9
+#define TEMPERATURE_PRECISION 9//12//9
 
 //static OneWire oneWire(PIN_ONEWIRE);  //statyczne?
 //static DallasTemperature sensors(&oneWire); //statyczne?
@@ -28,8 +28,8 @@ Device Address: 285296230600005C Temp C: 25.50 Temp F: 77.90
 Device Address: 28BEDA21060000C7 Temp C: 25.50 Temp F: 77.90
  */
 
-//#define DEBUG_KZGKOMORA
-#undef DEBUG_KZGKOMORA   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+#define DEBUG_KZGKOMORA
+//#undef DEBUG_KZGKOMORA   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
 #ifdef DEBUG_KZGKOMORA    //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
   #define DPRINTLN(...)  Serial.println(__VA_ARGS__)   //DPRINTLN is a macro, debug print with new line
@@ -57,19 +57,21 @@ class KZGrekuKomora
     //uint8_t co2=0;
       
     OneWire* _oneWire;
-    DeviceAddress* _termAddr;   // adres termometru na 1w magistrali
-    DallasTemperature _dsTermometr; //obiekt terometru
+    uint8_t* _termAddr;   // adres termometru na 1w magistrali
+    DallasTemperature *_dsTermometr; //obiekt terometru
     void pomiarTemp();
     void pomiarCisnienia();
     void pomiarWilgotnosci();
     //void pomiarCO2();
-    char addressStr[17];
+    char addressStr[20];
+	String _addresString;
   //  unsigned long _ms=0; //czas ms
-   
+    bool _connected=false;
     
 	public:
-    KZGrekuKomora(uint8_t id, DeviceAddress* termAddr);
-    void printAddress(DeviceAddress deviceAddress,char* buf);
+    KZGrekuKomora(uint8_t id, uint8_t* termAddr);
+    void printAddress(uint8_t* deviceAddress,char* buf);
+	void printAddressToStr(uint8_t* deviceAddress);
     char *getTempAddress(){return addressStr;}
     void begin(OneWire* oneWire);
     void loop();
