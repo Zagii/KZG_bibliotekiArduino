@@ -42,6 +42,7 @@ class KZGlan_mqtt
   EthernetClient _ethClient;
   PubSubClient _mqttClient;    
   unsigned long _ostatniOdczytanyPingMqtt=0;    // mqtt callback ustawia odczyt pingu
+  unsigned long _lastPingMillis=0;              // zapisuje kiedy ostatnio wysłał ping
   unsigned long _lastEthReconnectAttempt = 0;   // timer for auto eth reconnect
   unsigned long _lastMqttReconnectAttempt = 0;  // timer for auto mqtt reconnect
   bool _isEthNewConnecion=false;                // flag - new connection estabilished
@@ -67,10 +68,11 @@ class KZGlan_mqtt
   void KZGlan_mqttCallback _mqttCallback;
 public:
   KZGlan(){};
-  void begin(String name,byte [] mac, IPAddress mqttHostIP, String mqttHost,String mqttUser,String mqttPwd, uint16_t mqttPort);
+  void begin(String name,byte [] mac, IPAddress mqttHostIP, String mqttHost,String mqttUser,String mqttPwd, uint16_t mqttPort, KZGlan_mqttCallback mqttCallback);
   void loop();
   String getEthStatusString();
   void publish(String topic, String msg);
+  void publishPrefix(String topic, String msg);
   
 };
 #endif

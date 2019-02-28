@@ -64,7 +64,6 @@ void KZGlan_mqtt::mqttReconnect()
         _mqttClient.subscribe(_mojTopicIDSubscribeConfig.c_str());
         _mqttClient.subscribe(_mojTopicIDPing.c_str());
         _mqttClient.publish(_mojTopicIDPublishDebug.c_str(),"Polaczenie");
-        probaReconnect=0;
         DPRINTLN(F(" [ok]"));
       }else
       {
@@ -126,10 +125,9 @@ void KZGlan_mqtt::loop()
   
     if (!_mqttClient.connected())
     {
-      if (now - lastMqttReconnectAttempt > 5000) 
+      if (now - _lastMqttReconnectAttempt > 5000) 
       {
-        lastMqttReconnectAttempt = now;
-        ++probaReconnect;
+        _lastMqttReconnectAttempt = now;
         DPRINTLN(F("***** MQTT reconnecting.."));
         mqttReconnect();
       }
@@ -137,10 +135,9 @@ void KZGlan_mqtt::loop()
     else
     {    // Client connected
       _mqttClient.loop();
-      if(now-lastPingMillis>60000)
+      if(now-_lastPingMillis>60000)
       {
-        lastPingMillis=now;
-        lp++;
+        _lastPingMillis=now;
         
         unsigned long sec = millis() / 1000;
         unsigned long min = sec / 60;
@@ -152,7 +149,7 @@ void KZGlan_mqtt::loop()
         hr=hr%24;
         
         char tmp[50];
-        sprintf ( tmp,"%s: %lu= %02lud%02lu:%02lu:%02lu ",_name,lp,dd,hr, min,sec);
+        sprintf ( tmp,"%s: %02lud%02lu:%02lu:%02lu ",_name,dd,hr, min,sec);
         
         client.publish(_mojTopicIDPing.c_str(),tmp);
       }  
@@ -183,8 +180,10 @@ void KZGlan_mqtt::callback(char* topic, byte* payload, unsigned int length)
   if(strcmp(_mojTopicIDPing,topicStr.c_str())==0) //powrocil komunikat ping
   {
     _ostatniOdczytanyPingMqtt=millis();
+    DPRINT(F("reveived ping at [ms]: "));DPRINTLN(_ostatniOdczytanyPingMqtt);
   }else if(strcmp(_mojTopicIDSubscribeConfig,topicStr.c_str())==0)
   {
+    DPRINT(F("reveived config msg: "));DPRINTLN(msgStr);
     
   }else if(strcmp(_mojTopicIDSubscribe,topicStr.c_str())==0)
   {
@@ -198,3 +197,12 @@ void KZGlan_mqtt::publish(String topic, String msg)
     _mqttClient.publish(topic.c_str(),msg.c_str());
   }
 }
+void KZGlan_mqtt::publishPrefix(String topic, String msg)
+{
+  if (_mqttClient.connected())
+  {
+    String t=_mojTopicIDPublish+topic;
+    _mqttClient.publish(t.c_str(),msg.c_str());
+  }
+}
+
