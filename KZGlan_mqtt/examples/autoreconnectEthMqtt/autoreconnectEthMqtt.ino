@@ -7,22 +7,33 @@
 
 KZGlan_mqtt ethMqtt;
 
-void mqttCallback(String topic, String msg)
+void mqttCallback(char* topic, uint8_t* payload, unsigned int length) 
 {
-    Serial.print("### mqttCallback -> topic: ");
-    Serial.print(topic);
-    Serial.print(", msg: ");
-    Serial.println(msg);
-}
+  DPRINT(F("> Mqtt callback: "));
+  String topicStr=String(topic);
+  DPRINT(F("Topic:"));
+  DPRINT(topicStr);
 
+  DPRINT(F(" dlugosc= "));
+  DPRINT(length);
+ 
+  DPRINT(F(" MQTT_tresc= "));
+  String msgStr="";
+  for(int i=0;i<length;i++)
+  {
+    msgStr+=(char)payload[i];
+  }
+    DPRINTLN(msgStr);
+  
+}
 
 void setup()
 {
     Serial.begin(115200);
-    byte mac[]    = {  0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xED };
-    IPAddress mqttHost(192, 168, 0, 3);
+    byte mac[]    = {  0xCE, 0x00, 0x00, 0x00, 0x00, 0x01 };
+    IPAddress mqttHost(192, 168, 1, 3);
 
-    ethMqtt.begin("sample1",mac,mqttHost,"","","",1883,mqttCallback);
+    ethMqtt.begin(String("sample1"),mac,mqttHost,String(""),String(""),String(""),1883,mqttCallback);
      
     Serial.println("Koniec Setup"); 
 }
@@ -33,7 +44,7 @@ void loop()
     ethMqtt.loop();
     if(millis()-m>15000)
     {
-        Serial.print("## ");Serial.print(ethMqtt.getEthStatusString());
+        Serial.print("## ");Serial.println(ethMqtt.getEthStatusString());
         m=millis();
         ethMqtt.publish(String("sample1/Sub/testFullPath/"),String(m));
         ethMqtt.publishPrefix(String("testPrefix"),String(m));

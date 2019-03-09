@@ -31,6 +31,7 @@ void KZGlan_mqtt::begin(String name,byte * mac, IPAddress mqttHostIP, String mqt
  // _mqttClient.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->callback(topic, payload, length); });
 
   _mqttClient.setClient(_ethClient);
+  Ethernet.begin(_mac);
   ethReconnect();
   mqttReconnect();
   DPRINTLN("Debug KZGlan_mqtt::begin end"); 
@@ -39,11 +40,16 @@ void KZGlan_mqtt::begin(String name,byte * mac, IPAddress mqttHostIP, String mqt
 void KZGlan_mqtt::ethReconnect()
 {
   DPRINTLN(F("KZGlan_mqtt::ethReconnect")); 
- // Ethernet.stop();
-  Ethernet.begin(_mac);
-  //delay(500);
+ 
+  DPRINT(F("Starting ethernet..."));
+  if(!Ethernet.begin(_mac)) DPRINTLN(F("failed"));
+  else {
+      DPRINTLN(Ethernet.localIP());
+      DPRINTLN(Ethernet.gatewayIP());
+  }
   DPRINTLN(getEthStatusString());
 }
+
 void KZGlan_mqtt::mqttReconnect()
 {
   DPRINTLN(F("KZGlan_mqtt::mqttReconnect")); 
@@ -62,7 +68,7 @@ void KZGlan_mqtt::mqttReconnect()
     if(mqttconnStat) 
     {
 		DPRINTLN(F(" [ok]"));
-		DPRINT(F("Subskrypcja mqtt: "));
+		DPRINTLN(F("Subskrypcja mqtt: "));
         _mqttClient.subscribe(_mojTopicIDSubscribe.c_str());
 		DPRINT(F("-- "));DPRINT(_mojTopicIDSubscribe);DPRINTLN(F("; "));
         _mqttClient.subscribe(_mojTopicIDSubscribeConfig.c_str());
@@ -91,7 +97,7 @@ String KZGlan_mqtt::getEthStatusString()
     
   }else
   {
-    statStr="Eth Connection Error. status= "+ _ethClient.connected();
+     statStr="Eth Connection Error. status= "+ String(_ethClient.connected());
     
   }
   return statStr;
