@@ -5,12 +5,12 @@
 //////////////////   init          ////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-void KZGinput::init(uint8_t pin, String nazwa, uint8_t initState, bool activeLow)
+void KZGinput::init(uint8_t pin, String name, uint8_t initState, bool activeLow)
 {
-  DPRINT(F("Wejscie init, pin=")); DPRINT(pin); DPRINT(F("; nazwa="));DPRINTLN(nazwa);
+  DPRINT(F("Wejscie init, pin=")); DPRINT(pin); DPRINT(F("; nazwa="));DPRINTLN(name);
   
   _pin=pin;
-  _nazwa=nazwa;
+  _name=name;
   pinMode(_pin,INPUT_PULLUP);
   _state = initState; // starting with state 0: waiting for button to be pressed
 
@@ -34,7 +34,7 @@ void KZGinput::init(uint8_t pin, String nazwa, uint8_t initState, bool activeLow
 ///////////////////////////////////////////////////////////////
 //////////////////   debounceRead /////////////////////////////
 ///////////////////////////////////////////////////////////////
-uint8_t Cwejscie::debounceRead()
+uint8_t KZGinput::debounceRead()
 {
   // read the state of the switch into a local variable:
   uint8_t reading;// =_digitalRead(_pin);
@@ -76,23 +76,23 @@ String KZGinput::getStatusString()
   //StaticJsonBuffer<100> jsonBuffer;
   //JsonObject& root = jsonBuffer.createObject();
   String w="{ \"type\":\"KZGinput\", \"pin\":"+String(_pin);
-  w+=", \"name\":\""+ _name + "\"";
+  w+=", \"name\":\""+ String(_name) + "\"";
   if(_buttonState==_buttonPressed)
   {
       //root["buttonState"]="p";
-      w+=",\"buttonState\":\"p\"";
+      w+=String(",\"buttonState\":\"p\"");
   }
   else 
   {
     //root["buttonState"]="r";
-    w+=",\"buttonState\":\"r\"";
+    w+=String(",\"buttonState\":\"r\"");
   }
-  w+=",\"state\":\""+ _state + "\"";
-  w+=",\"isClicked\":\""+ _isClicked + "\"";
-  w+=",\"isDblClicked\":\""+ _isDblClicked + "\"";
-  w+=",\"isPressed\":\""+ _isPressed + "\"";
-  w+=",\"isRelesed\":\""+ _isRelesed + "\"";
-  w+=",\"isSwitched\":\""+ _isSwitched + "\"";
+  w+=",\"state\":\""+ String(_state) + "\"";
+  w+=",\"isClicked\":\""+ String(_isClicked) + "\"";
+  w+=",\"isDblClicked\":\""+ String(_isDblClicked) + "\"";
+  w+=",\"isPressed\":\""+ String(_isPressed) + "\"";
+  w+=",\"isRelesed\":\""+ String(_isRelesed) + "\"";
+  w+=",\"isSwitched\":\""+ String(_isSwitched) + "\"";
   w+="}";
 
   /*root["isClicked"]=_isClicked;
@@ -137,7 +137,7 @@ bool KZGinput::loop(void)
         DPRINT(F("**** btn Clicked? r->p: "));DPRINTLN(getStatusString());
       } else 
       {
-        if ((buttonLevel == _buttonPressed) && (now - _startTime  >  _pressTicks)) 
+        if ((buttonLevel == _buttonPressed) && (now - _startTime  >  KZGinput_pressTicks)) 
         {
           _isPressed=true;
           _isSwitched=true;
@@ -147,7 +147,7 @@ bool KZGinput::loop(void)
       }//else
     break;
     case KZGinput_STAN_KLIK_DU:
-      if (now-_startTime > _clickTicks) 
+      if (now-_startTime > KZGinput_clickTicks) 
       {
         _isClicked=true;
         _state = KZGinput_STAN_RELEASED; // restart.
@@ -163,7 +163,7 @@ bool KZGinput::loop(void)
       }
     break;
     case KZGinput_STAN_KLIK_DUD:
-      if (now-_startTime > _clickTicks)
+      if (now-_startTime > KZGinput_clickTicks)
       {
         _isDblClicked=true;
         _state = KZGinput_STAN_PRESSED; // koniec czasu uznaj ze byl klik.
@@ -195,7 +195,7 @@ bool KZGinput::loop(void)
       }
       else 
       {
-        if ((buttonLevel == _buttonReleased) && (now - _startTime  >  _pressTicks)) 
+        if ((buttonLevel == _buttonReleased) && (now - _startTime  >  KZGinput_pressTicks)) 
         {
           _isSwitched=true;
           _isRelesed=true;
@@ -205,7 +205,7 @@ bool KZGinput::loop(void)
       }
     break;
     case KZGinput_STAN_KLIK_UD:
-      if (now-_startTime > _clickTicks) 
+      if (now-_startTime > KZGinput_clickTicks) 
       { 
         _isClicked=true;
         _state = KZGinput_STAN_PRESSED; // restart.
@@ -222,7 +222,7 @@ bool KZGinput::loop(void)
       }
     break;
     case KZGinput_STAN_KLIK_UDU:
-      if (now-_startTime > _clickTicks)
+      if (now-_startTime > KZGinput_clickTicks)
       {
         _isDblClicked=true;
         _state = KZGinput_STAN_RELEASED;

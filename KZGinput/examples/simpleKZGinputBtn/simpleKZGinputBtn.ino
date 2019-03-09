@@ -9,7 +9,7 @@ KZGinput btn1;
 void setup()
 {
     Serial.begin(115200);
-    btn1.init(1,"btn1",KZGinput_STAN_RELEASED,true);
+    btn1.init(A14,"btn1",KZGinput_STAN_RELEASED,true);
     Serial.println("Koniec Setup"); 
 }
 
@@ -19,6 +19,6 @@ void loop()
   if(btn1.loop())
   {
     Serial.print("Btn event, new status: ");
-    Serial.print(btn1.getStatusString());
+    Serial.println(btn1.getStatusString());
   }
 }

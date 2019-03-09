@@ -6,8 +6,8 @@
 
 #define  KZGinput_DEBOUNCE_DELAY  100    // the debounce time; increase if the output flickers
 
-#define KZGinput_clickTicks 300  // number of millisec that have to pass by before a click is detected.
-#define KZGinput_pressTicks 500  // number of millisec that have to pass by before a lonn button press is detected.
+#define KZGinput_clickTicks 200  // number of millisec that have to pass by before a click is detected.
+#define KZGinput_pressTicks 300  // number of millisec that have to pass by before a lonn button press is detected.
 
  #define KZGinput_STAN_RELEASED 0 //puszczony przycisk
  #define KZGinput_STAN_KLIK_D   01 //był pojedynczy klik na wejsciu
@@ -61,7 +61,7 @@ class KZGinput
     uint8_t debounceRead();
   public:
     KZGinput(){};
-    void  init(uint8_t pin,String nazwa, uint8_t initState, bool activeLow);
+    void  init(uint8_t pin,String name, uint8_t initState, bool activeLow);
     bool loop(void); // return true if btn detect a change
     String getStatusString();
     bool isClicked(){return _isClicked;}
