@@ -16,7 +16,9 @@
 //#define WYJSCIE_MCP 1
 
 #define T_PWM 50
+#define KZGoutput_autoOFFduration 3000
 
+#include "FaBoPWM_PCA9685.h"
 
 class KZGoutput
 {
@@ -34,10 +36,20 @@ class KZGoutput
     unsigned long _timerPWM=0;
     unsigned long _timeOfHardwareState=0; // przechowuje czas kiedy wyjscie fizyczne zmieniło stan
 	unsigned long _cyklPWM; // cykl co ile ma byc zmiana stanu w trakcie fadowania
-  
+	
+	bool _usePCA9685=false;
+	FaBoPWM _faboPWM;
+	
+	bool _isWaitingForChange=false; // is output waiting for automated change state
+	unsigned long _waitingForChangeDuration=0; //millis time when change should happened
+	unsigned long _waitingForChangeStartTime=0; //millis of first setting value
+	unsigned long _futureState;		// state of future change, turn off or setup def value
+	bool _futureChangeFading=false;
+	
+	void prepareAutoChangeState(unsigned long futureState, unsigned long timeToChangeState,bool fading);
   public:
     KZGoutput(){};
-    void begin(String name, uint8_t pin, unsigned long on, unsigned long off, unsigned long initState);
+    void begin(String name, uint8_t pin, unsigned long on, unsigned long off, unsigned long initState, bool usePCA9685);
     void setOutput(unsigned long state);
     void setOutputON(){setOutput(_on);}
     void setOutputOFF(){setOutput(_off);}
@@ -49,5 +61,8 @@ class KZGoutput
     bool isFading(){return _isFading;}
     unsigned long getTimeOfHardwareState(){return _timeOfHardwareState;}
     String getName(){return _name;}
+	void setOutputThenChange(unsigned long state, unsigned long futureState, unsigned long timeToChangeState);
+	void setFadingSpeedThenChange(unsigned long aimState, unsigned long speed,unsigned long futureState, unsigned long timeToChangeState);
+	void setFadingDurationThenChange(unsigned long aimState, unsigned long duration, unsigned long futureState, unsigned long timeToChangeState);
 };
 #endif

@@ -1,11 +1,20 @@
 #include "KZGoutput.h"
 
     
-void KZGoutput::begin(String name, uint8_t pin, unsigned long on, unsigned long off, unsigned long initState)
+void KZGoutput::begin(String name, uint8_t pin, unsigned long on, unsigned long off, unsigned long initState, bool usePCA9685)
 {
   _name=name;
   _pin=pin;
-  pinMode(_pin,OUTPUT);
+  _usePCA9685=usePCA9685;
+  if(_usePCA9685)
+  {
+	_faboPWM.begin();
+	_faboPWM.init(0);
+	_faboPWM.set_hz(1000);
+  }else
+  {
+	pinMode(_pin,OUTPUT);
+  }
   _on=on;
   _off=off;
   if(_on>_off)
@@ -62,7 +71,29 @@ void KZGoutput::setFadingDuration(unsigned long aimState, unsigned long duration
 	DPRINT(" startMillis=");DPRINTLN(_timerPWM);
 
 }
-
+void KZGoutput::prepareAutoChangeState(unsigned long futureState, unsigned long timeToChangeState,bool fading)
+{
+	_isWaitingForChange=true; 
+	_waitingForChangeDuration=timeToChangeState;
+	_waitingForChangeStartTime=millis();
+	_futureState=futureState;
+	_futureChangeFading=fading;
+}
+void KZGoutput::setOutputThenChange(unsigned long state, unsigned long futureState, unsigned long timeToChangeState)
+{
+	prepareAutoChangeState(futureState,timeToChangeState,false);
+	setOutput(state);
+}
+void KZGoutput::setFadingSpeedThenChange(unsigned long aimState, unsigned long speed,unsigned long futureState, unsigned long timeToChangeState)
+{
+	prepareAutoChangeState(futureState,timeToChangeState,true);
+	setFadingSpeed(aimState,speed);
+}
+void KZGoutput::setFadingDurationThenChange(unsigned long aimState, unsigned long duration, unsigned long futureState, unsigned long timeToChangeState)
+{
+	prepareAutoChangeState(futureState,timeToChangeState,true);
+	setFadingDuration(aimState,duration);
+}
 
 /*************************
  * return true if 
@@ -73,6 +104,21 @@ void KZGoutput::setFadingDuration(unsigned long aimState, unsigned long duration
 bool KZGoutput::loop()    // if state has changed
 {
 DPRINT("HardwareSate:");DPRINT(_hardwareState);DPRINT(" isFading:");DPRINT(_isFading);DPRINT(" currentState:");DPRINTLN(_currentState);
+  if(_isWaitingForChange)
+  {
+	if(millis()-_waitingForChangeStartTime>_waitingForChangeDuration)
+	{
+		_isWaitingForChange=false;
+		_isFading=false;
+		if(_futureChangeFading)
+		{
+			setFadingDuration(_futureState,KZGoutput_autoOFFduration);
+		}else
+		{
+			setOutput(_futureState);
+		}
+	}
+  }
   if(_isFading)
   {
     if(millis() - _timerPWM>_cyklPWM)
@@ -116,14 +162,26 @@ DPRINT("HardwareSate:");DPRINT(_hardwareState);DPRINT(" isFading:");DPRINT(_isFa
     if(_hardwareState==_on || _hardwareState == _off)
     {
 	  DPRINT("KZGoutput::loop digitalChange");DPRINTLN(_hardwareState);
-      digitalWrite(_pin,_hardwareState);
+	  if(_usePCA9685)
+	  {
+		_faboPWM.set_channel_value(_pin, _hardwareState);
+	  }else
+	  {
+		digitalWrite(_pin,_hardwareState);
+	  }
 	  DPRINT("d stopMillis=");DPRINTLN(millis());
       _isFading=false;
       return true;
     } else
     {
 	  DPRINT("KZGoutput::loop analogChange");DPRINTLN(_hardwareState);
-      analogWrite(_pin,_hardwareState);
+      if(_usePCA9685)
+	  {
+		_faboPWM.set_channel_value(_pin, _hardwareState);
+	  }else
+	  {
+		analogWrite(_pin,_hardwareState);
+	  }
       if(_aimState==_hardwareState)
       {
 	  	 DPRINT("KZGoutput::loop stopFading");DPRINTLN(_hardwareState);
@@ -149,5 +207,13 @@ String KZGoutput::getJsonStatusStr()
   if(isFading())f="1";
   String w="{\"pin\":\""+String(_pin)+"\", \"name\":\""+String(_name)+"\", \"value\":\""+String(_hardwareState)+"\"";
   w+=", \"isFading\":\""+f +"\", \"aimValue\":\""+String(_aimState)+"\"";
+  f="0";
+  long ttc=0;
+  if(_isWaitingForChange)
+  {
+  f="1";
+  ttc=millis()-_waitingForChangeStartTime-_waitingForChangeDuration;
+  }
+  w+=", \"isWaiting4Change\":\""+f+"\", \"futureState\":\""+String(_futureState) + "\", \"timeToChange\":"+String(ttc);
   return w+="}";
 }

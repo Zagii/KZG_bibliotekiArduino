@@ -13,8 +13,8 @@ void setup()
 {
     Serial.begin(115200);
     randomSeed(analogRead(0));
-    o_digital.begin("outDigital",2,255,0,0);
-    o_analog.begin("outAnalog",3,255,0,0);
+    o_digital.begin("outDigital",0,0xFFF,0,0,true);
+    o_analog.begin("outAnalog",1,0xFFF,0,0,true);
    
     Serial.println("Koniec Setup"); 
 }
