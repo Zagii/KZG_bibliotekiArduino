@@ -1,12 +1,13 @@
 #ifndef KZGcentralka_h
 #define KZGcentralka_h
 
-#include <KZGinput.h>
-#include <KZGoutput.h>
-#include <KZGlan_mqtt.h>
 #include <ArduinoJson.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <KZGinput.h>
+#include <KZGoutput.h>
+#include <KZGlan_mqtt.h>
+
 
 
 
@@ -27,30 +28,30 @@
 
 class KZGcentralka
 {
-  byte _mac[]    = {  0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xED };
+  byte _mac[7];//    = {  0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xED };
   String _name;
   uint8_t _input_num;
   uint8_t _output_num;
   KZGlan_mqtt _ethMqtt;
   KZGinput _inputs[MAX_INPUTS];
   KZGoutput _outputs[MAX_OUPUTS];
-  uint8_t _1w_pin;
+  uint8_t _w1_pin;
   uint8_t _ds18b20precision;
-  OneWire _oneWire;
-  DallasTemperature _sensors;
+  OneWire *_oneWire;
+  DallasTemperature *_sensors;
   unsigned long _tempFreq;
   unsigned long _lastTempMeasure;
   bool _termometerWaiting=false;
   int _numberOfDevices; 
   DeviceAddress _tempDeviceAddress[MAX_TERMOMETERS+1];
 
-  printAddressToStr(DeviceAddress deviceAddress);
+  String printAddressToStr(DeviceAddress deviceAddress);
   public:
-  KZGcentralka(){};
-  void begin(String name,byte [] mac, IPAddress mqttHostIP, String mqttHost,String mqttUser,String mqttPwd, uint16_t mqttPort);
+  KZGcentralka(){  };
+  void begin(String name,byte mac[], IPAddress mqttHostIP, String mqttHost,String mqttUser,String mqttPwd, uint16_t mqttPort,uint8_t w1_pin, uint8_t ds18b20precision, unsigned long tempFreq);
   void loop();
   void addInput(uint8_t pin,String nazwa, uint8_t initState, bool activeLow);
-  void addOutput(String name, uint8_t pin, uint16_t on, uint16_t off, uint16_t initState);
+  void addOutput(String name, uint8_t pin, uint16_t on, uint16_t off, uint16_t initState,bool usePCA9685);
   void callback(String topic, String msg);
   void checkNewTermometers();
 };

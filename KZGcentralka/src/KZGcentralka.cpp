@@ -1,20 +1,20 @@
 #include "KZGcentralka.h"
 
-void KZGcentralka::begin(String name,byte [] mac, IPAddress mqttHostIP, String mqttHost,String mqttUser,String mqttPwd, uint16_t mqttPort,uint8_t 1w_pin,uint8_t ds18b20precision, unsigned long tempFreq)
+void KZGcentralka::begin(String name,byte mac[], IPAddress mqttHostIP, String mqttHost,String mqttUser,String mqttPwd, uint16_t mqttPort,uint8_t w1_pin,uint8_t ds18b20precision, unsigned long tempFreq)
 {
   DPRINTLN("Debug KZGcentralka::begin start"); 
   String _name=name;
   
-  _ethMqtt.begin(name,mac,mqttHost,mqttUser,mqttPwd,mqttPort,[this] (String topic, String msg) { this->callback(String topic, String msg); }));
+ // _ethMqtt.begin(name,mac,mqttHost,mqttUser,mqttPwd,mqttPort,[this] (String topic, String msg) { this->callback(String topic, String msg); }));
   _input_num=0;
   _output_num=0;
 
-  _1w_pin=1w_pin;
+  _w1_pin=w1_pin;
   _ds18b20precision=ds18b20precision;
   _tempFreq=tempFreq;
   
-  _oneWire(_1w_pin);
-  _sensors(&_oneWire);
+  _oneWire=new OneWire(_w1_pin);
+  _sensors=new DallasTemperature(_oneWire);
  
   checkNewTermometers();
 
@@ -33,17 +33,17 @@ String KZGcentralka::printAddressToStr(DeviceAddress deviceAddress)
 }
 void KZGcentralka::checkNewTermometers()
 {
-  _sensors.begin();
-  _sensors.setResolution(_ds18b20precision);
-  _sensors.setWaitForConversion(false);
-  _numberOfDevices = _sensors.getDeviceCount();
+  _sensors->begin();
+  _sensors->setResolution(_ds18b20precision);
+  _sensors->setWaitForConversion(false);
+  _numberOfDevices = _sensors->getDeviceCount();
   if(_numberOfDevices>MAX_TERMOMETERS)_numberOfDevices=MAX_TERMOMETERS;
   
   // Loop through each device, print out address
   for(int i=0;i<_numberOfDevices; i++)
   {
     // Search the wire for address
-    if(_sensors.getAddress(_tempDeviceAddress[i], i))
+    if(_sensors->getAddress(_tempDeviceAddress[i], i))
 	  {
       DPRINT("Found device ");
       DPRINT(i, DEC);
@@ -62,12 +62,12 @@ void KZGcentralka::checkNewTermometers()
 }
 void KZGcentralka::addInput(uint8_t pin,String nazwa, uint8_t initState, bool activeLow)
 {
-  _inputs[_input_num].begin(pin,nazwa,initState,activeLow);
+  _inputs[_input_num].init(pin,nazwa,initState,activeLow);
   _input_num++;
 }
-void KZGcentralka::addOutput(String name, uint8_t pin, uint16_t on, uint16_t off, uint16_t initState)
+void KZGcentralka::addOutput(String name, uint8_t pin, uint16_t on, uint16_t off, uint16_t initState,bool usePCA9685)
 {
-  _outputs[_output_num].begin(name,pin,on,off,initState);
+  _outputs[_output_num].begin(name,pin,on,off,initState,usePCA9685);
   _output_num++;
 }
 
@@ -75,18 +75,18 @@ void KZGcentralka::loop()
 {
   if(millis()-_lastTempMeasure>_tempFreq)
   {
-    sensors.requestTemperatures();
+    _sensors->requestTemperatures();
     _termometerWaiting=true;
     _lastTempMeasure=millis();
   }
 
-  if(millis()-_lastTempMeasure>_sensor.millisToWaitForConversion(_ds18b20precision) && _termometerWaiting)
+  if(millis()-_lastTempMeasure>_sensors->millisToWaitForConversion(_ds18b20precision) && _termometerWaiting)
   {
     _termometerWaiting=false;
 
     for(int i=0;i<_numberOfDevices; i++)
     {
-      float tempC= _sensors.getTempC(_tempDeviceAddress[i]);
+      float tempC= _sensors->getTempC(_tempDeviceAddress[i]);
       if(tempC == DEVICE_DISCONNECTED_C) 
       {
         DPRINTLN("Error: Could not read temperature data");
@@ -94,7 +94,7 @@ void KZGcentralka::loop()
       }
       String s="{\"name\":\""+_name+"\", \"termometrAddr\": \""+printAddressToStr(_tempDeviceAddress[i])+"\"";
       s+=", \"value\": \""+String(tempC)+"\"}";
-      _ethMqtt.publishPrefix("tepmeratura",s);
+    //  _ethMqtt.publishPrefix("tepmeratura",s);
     }
 
   }
@@ -108,10 +108,10 @@ void KZGcentralka::loop()
   {
     if(_inputs[i].loop())
     {
-      String s=_ipnuts[i].getStatusString();
+      String s=_inputs[i].getStatusString();
      DPRINT("Btn event, new status: ");
       DPRINT(s);
-      _ethMqtt.publishPrefix(String("input"),s);
+     // _ethMqtt.publishPrefix(String("input"),s);
     }
   }
   for(uint8_t j=0;j<_output_num;j++)
@@ -141,7 +141,7 @@ void KZGcentralka::callback(String topic, String msg)
     DPRINT(topic);
     DPRINT(", msg: ");
     DPRINTLN(msg);
-
+/*
     if(topic.indexOf("output")>0)
     {
       DynamicJsonDocument doc(1024);
@@ -181,5 +181,5 @@ void KZGcentralka::callback(String topic, String msg)
       }
       
 
-    }
+    }*/
 }
