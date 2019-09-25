@@ -16,9 +16,9 @@ void KZGwifi::setNTP(String host,unsigned long offset_h)
 
 
 
-void KZGwifi::begin()
+void KZGwifi::begin(char const *apName)
 {
-  DPRINTLN("Debug KZGwifi::begin start"); 
+  DPRINTLN("Debug KZGwifi::begin start-wifiManager"); 
   ///////////////// wifiManager start /////////////////
   pinMode(PIN_LED, OUTPUT);
   Serial.println("\n Starting");
@@ -44,7 +44,7 @@ void KZGwifi::begin()
 
     //it starts an access point 
     //and goes into a blocking loop awaiting configuration
-    if (!wifiManager.startConfigPortal()) {
+    if (!wifiManager.startConfigPortal(apName)) {
       Serial.println("Not connected to WiFi but continuing anyway.");
     } else {
       //if you get here you have connected to the WiFi
@@ -106,7 +106,7 @@ bool KZGwifi::getWifiStatusBuf(char *b)
  
 bool KZGwifi::wifiConnected()
 {
- if() WiFi.status()==WL_CONNECTED)
+ if( WiFi.status()==WL_CONNECTED)
  {
    if(lastConnectedStatus!=WL_CONNECTED)  //wylapanie momentu zestawienia polaczenia
    {

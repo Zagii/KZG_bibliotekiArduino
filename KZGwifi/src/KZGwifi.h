@@ -9,7 +9,6 @@
 #include <WiFiManager.h>          //https://github.com/kentaylor/WiFiManager
 
 #include <DoubleResetDetector.h> //https://github.com/datacute/DoubleResetDetector
-#include <KZGconfigFile.h>
 #include <NTPClient.h>
 
 // Number of seconds after reset during which a 
@@ -64,7 +63,7 @@ String ntp_server;
 unsigned long ntp_offset_h=2;
 
 
-DoubleResetDetector drd;
+DoubleResetDetector *drd;
 // Onboard LED I/O pin on NodeMCU board
 const int PIN_LED = 2; // D4 on NodeMCU and WeMos. Controls the onboard LED.
 
@@ -80,7 +79,7 @@ uint8_t lastConnectedStatus;
 public:
   KZGwifi(){ drd= new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);};
   void setNTP(String host,unsigned long offset_h);
-  void begin();
+  void begin(char const *apName);
   String getWifiStatusString();
   bool getWifiStatusBuf(char *b);
   bool wifiConnected();
