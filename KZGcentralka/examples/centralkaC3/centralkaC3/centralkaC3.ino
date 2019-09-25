@@ -46,34 +46,36 @@
 /////////////////s14 to ledy w lazience na dole nie zaznaczone na projekcie
                                    ///    wyjsciaPWM              wyj 12V                                                 wyj 220V
 //const char wyjPIN_OPIS[] PROGMEM = {"PWM1","PWM2","PWM3","OUT1","OUT2","OUT3","OUT4","OUT_220_1","OUT_220_2","OUT_220_3","OUT_220_4","OUT_220_5","OUT_220_6","OUT_220_7","OUT_220_8"};
-enum wyjPIN_TXT                    { s1,   s2,   s3,   s4,   s5,  s6,  s7,   s8,  s9,  s10,   s11,  s12,    s13,  s14,   s15,    s16,  s17,  s18 };
+//enum wyjPIN_TXT                    { s1,   s2,   s3,   s4,   s5,  s6,  s7,   s8,  s9,  s10,   s11,  s12,    s13,  s14,   s15,    s16,  s17,  s18 };
 //enum wyjPIN_ENUM                    {PWM1   ,PWM2,   PWM3, OUT1,   OUT2,   OUT3,  OUT4, OUT_220_1,OUT_220_2, OUT_220_3,  OUT_220_4,  OUT_220_5,  OUT_220_6,  OUT_220_7,  OUT_220_8};
                                       /*10 to cs eth, pin=4 to od SD nie uzywac z w5100*/    
-const byte wyjPIN_pin[] PROGMEM   ={ 30,   31,   2,    32,   33,  34,  35,   3,   13,     6,   36,    7,     8,      9,    11,    12,     45,  46 };
-static const  char*  wyjItem[]    ={"s1", "s2", "s3", "s4", "s5","s6","s7", "s8","s9", "s10", "s11","s12", "s13", "s14", "s15", "s16", "s17","s18"};
-const bool wyjPWM[]               ={  0,    0,    1,    0,    0,   0,   0,    1,  1,     1,     0,    1,    1,      1,    1,      1,      1,   1};
-const byte ile_wyjsc=18;
+const byte wyjPIN_pin[] PROGMEM   ={ A8,   A9,   A10,  A11,  A12, A13, A14,   1,   2,   3,      4,    5,     6,    7,      8,    9,     10,    11,   12,     13,    14,    15 };
+static const  char*  wyjItem[]    ={"s1", "s2", "s3", "s4", "s5","s6","s7", "s8","s9", "s10", "s11","s12", "s13", "s14", "s15", "s16", "s17","s18", "s19", "s20", "s21", "s22"};
+const bool wyjPWM[]               ={  0,    0,    0,    0,    0,   0,   0,    1,  1,     1,     1,    1,    1,      1,    1,      1,      1,   1,     1,     1,     1,     1};
+const byte ile_wyjsc=22;
 
 //const char wejPIN_OPIS[] PROGMEM = {"INP1","INP2","INP3","INP4","INP5","INP6","INP7","INP8","INP9","INP10","INP13","INP14","INP15","INP16"};//"INP11","INP12" -Serial
-enum wejPIN_TXT                    {  w1  ,    w2 ,   w3  ,  w4,     w5  ,  w6,      w7  ,  w8,  w9,   w10,  w11,  w12,  w13,  w14,  p1,  p2,  p3};
+//enum wejPIN_TXT                    {  w1  ,    w2 ,   w3  ,  w4,     w5  ,  w6,      w7  ,  w8,  w9,   p1,  w11,  w12,  w13,  w14,  p1,  p2,  p3};
 //enum wejPIN_ENUM                 {  INP1, INP2  ,INP3 ,   INP4 , INP5 , INP6 ,   INP7 , INP8 ,  INP9 ,   INP10 ,INP11,  INP12, INP13 , INP14 , INP15 , INP16 };//"INP11","INP12"
-const byte wejPIN_pin[] PROGMEM =  {  A0,     A1,     A2,    A3,     25,    A5,      A4,    A8,  A9,   A10,  A11,  A12,  A13,  A14,  22,  23,  24};   //  0,      1
-static const  char* wejItem[]  =   {  "w1",   "w2",  "w3",  "w4",   "w5",  "w6" ,   "w7",  "w8","w9", "w10","w11","w12","w13","w14","p1","p2","p3"};
+const byte wejPIN_pin[] PROGMEM =  {  53,     51,     49,    47,     45,    43,      41,    39,   37,   35,  33,  31,  29,  27,  25};   //  0,      1
+static const  char* wejItem[]  =   {  "w1",   "w2",  "w3",  "w4",   "w5",  "w6" ,   "w7",  "w8", "w9", "p1","p2","p3","p4","p5","p6"};
                                       /// brakuje 2=1wire,4,5, 10, 12
-const byte ile_wejsc=16;
+const byte ile_wejsc=15;
 
+#define ONEwirePIN 23
+#define TEMPprec 12
+#define TEMPfreq 5000
 
 KZGcentralka c;
-//KZGoutput oPwm[15];
 
  byte mac[]    = {  0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xED };
 void setup()
 {
     Serial.begin(115200);
    
-    IPAddress mqttHost(192, 168, 0, 3);
-
-    c.begin("c3",mac,mqttHost,String(""),String(""),String(""),1883,1,12,5000);
+    IPAddress mqttHost(192, 168, 1, 3);
+    
+    c.begin("c3",mac,mqttHost,String(""),String(""),String(""),1883,ONEwirePIN,TEMPprec,TEMPfreq);
  //   c.addInput(0,"i0",KZGinput_STAN_RELEASED,true);
  //   c.addInput(1,"i1",KZGinput_STAN_RELEASED,true);
  //   c.addInput(2,"i2",KZGinput_STAN_RELEASED,true);
@@ -81,21 +83,20 @@ void setup()
    // c.addOutput("o0",10,255,0,0);
    // c.addOutput("o1",11,255,0,0);
    // c.addOutput("o2",12,255,0,0);
-    for(int i=0;i<15;i++)
+    for(uint8_t i=0;i<ile_wyjsc;i++)
     {
-      String n="s"+String(i+1);
-      c.addOutput(n,i+1,0xFFF,0,2000,true);
+      if(wyjPWM[i])
+        c.addOutput(String(wyjItem[i]),wyjPIN_pin,0xFFF,0,0,true);
+      else
+       c.addOutput(String(wyjItem[i]),wyjPIN_pin,0xFF,0,0,false);
     }
 
     for(uint8_t j=0;j<ile_wejsc;j++)
     {
-//      c.addInput(wejPIN_pin[j],wejItem[j],KZGinput_STAN_RELEASED,true);
+      c.addInput(wejPIN_pin[j],wejItem[j],KZGinput_STAN_RELEASED,true);
     }
 
-    for(uint8_t i=0;i<ile_wyjsc;i++)
-    {
-//      c.addOutput(wyjItem[i],wyjPIN_pin,255,0,0);
-    }
+    
 
     Serial.println("Koniec Setup"); 
 }

@@ -49,9 +49,9 @@
 enum wyjPIN_TXT                    { s1,   s2,   s3,   s4,   s5,  s6,  s7,   s8,  s9,  s10,   s11,  s12,    s13,  s14,   s15,    s16,  s17,  s18 };
 //enum wyjPIN_ENUM                    {PWM1   ,PWM2,   PWM3, OUT1,   OUT2,   OUT3,  OUT4, OUT_220_1,OUT_220_2, OUT_220_3,  OUT_220_4,  OUT_220_5,  OUT_220_6,  OUT_220_7,  OUT_220_8};
                                       /*10 to cs eth, pin=4 to od SD nie uzywac z w5100*/    
-const byte wyjPIN_pin[] PROGMEM   ={ 30,   31,   2,    32,   33,  34,  35,   3,   13,     6,   36,    7,     8,      9,    11,    12,     45,  46 };
-static const  char*  wyjItem[]    ={"s1", "s2", "s3", "s4", "s5","s6","s7", "s8","s9", "s10", "s11","s12", "s13", "s14", "s15", "s16", "s17","s18"};
-const bool wyjPWM[]               ={  0,    0,    1,    0,    0,   0,   0,    1,  1,     1,     0,    1,    1,      1,    1,      1,      1,   1};
+const byte wyjPIN_pin[] PROGMEM   ={ 32,   34,   36,    38,   40,  42,  44,   1,   2,     3,   4,    5,     6,      7,    8,      9,     10,  11,   12,    13,    14,     15 };
+static const  char*  wyjItem[]    ={"s1", "s2", "s3", "s4", "s5","s6","s7", "s8","s9", "s10", "s11","s12", "s13", "s14", "s15", "s16", "s17","s18", "s19", "s20", "s21", "s22"};
+const bool wyjPWM[]               ={  0,    0,    0,    0,    0,   0,   0,    1,  1,     1,     1,    1,    1,      1,    1,      1,      1,   1,     1,    1,     1,      1 };
 const byte ile_wyjsc=18;
 
 //const char wejPIN_OPIS[] PROGMEM = {"INP1","INP2","INP3","INP4","INP5","INP6","INP7","INP8","INP9","INP10","INP13","INP14","INP15","INP16"};//"INP11","INP12" -Serial
@@ -63,22 +63,34 @@ static const  char* wejItem[]  =   {  "w1",   "w2",  "w3",  "w4",   "w5",  "w6" 
 const byte ile_wejsc=16;
 
 
+
+/// onewire pin 2
+#define ONE_WIRE_BUS 2
+#define TEMPERATURE_PRECISION 12
+#define TEMP_FREQ 5000
+////////// ds18b20 termometry
+/// schody góra T4  28FF641DEA7CA6C7 {0x28, 0xFF, 0x64, 0x1D, 0xEA, 0x7C, 0xA6, 0xC7  }
+/// WC z wanną T3   
+/// warsztat T2     
+/// garderoba C3 T1 28FF641DEA7C64B1 {0x28, 0xFF, 0x64, 0x1D, 0xEA, 0x7C, 0x64, 0xB1  }
+
+
 KZGcentralka c;
 
 void setup()
 {
     Serial.begin(115200);
     byte mac[]    = {  0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xED };
-    IPAddress mqttHost(192, 168, 0, 3);
+    IPAddress mqttHost(192, 168, 1, 3);
 
-    c.begin("c2",mac,mqttHost,"","",1883);
-    c.addInput(0,"i0",KZGinput_STAN_RELEASED,true);
-    c.addInput(1,"i1",KZGinput_STAN_RELEASED,true);
-    c.addInput(2,"i2",KZGinput_STAN_RELEASED,true);
+    c.begin("c2",mac,mqttHost,"","","",1883, ONE_WIRE_BUS,TEMPERATURE_PRECISION,TEMP_FREQ);
+//    c.addInput(0,"i0",KZGinput_STAN_RELEASED,true);
+  //  c.addInput(1,"i1",KZGinput_STAN_RELEASED,true);
+  //  c.addInput(2,"i2",KZGinput_STAN_RELEASED,true);
 
-    c.addOutput("o0",10,255,0,0);
-    c.addOutput("o1",11,255,0,0);
-    c.addOutput("o2",12,255,0,0);
+  //  c.addOutput("o0",10,255,0,0);
+  //  c.addOutput("o1",11,255,0,0);
+    c.addOutput("o2",2,0xFFF,0,0,true);
      
 
     for(uint8_t j=0;j<ile_wejsc;j++)
@@ -98,4 +110,6 @@ void setup()
 void loop()
 {
     c.loop();
+
+    
 }
