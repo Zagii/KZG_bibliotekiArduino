@@ -1,13 +1,23 @@
 #ifndef KZGWIFI_h
 #define KZGWIFI_h
 
-#include <ArduinoJson.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-#include <WiFiClient.h>
-#include <NTPClient.h>
-#include <WiFiUdp.h>
+#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+
+//needed for library
+#include <ESP8266WebServer.h>
+#include <DNSServer.h>
+#include <WiFiManager.h>          //https://github.com/kentaylor/WiFiManager
+
+#include <DoubleResetDetector.h> //https://github.com/datacute/DoubleResetDetector
 #include <KZGconfigFile.h>
+#include <NTPClient.h>
+
+// Number of seconds after reset during which a 
+// subseqent reset will be considered a double reset.
+#define DRD_TIMEOUT 10
+
+// RTC Memory Address for the DoubleResetDetector to use
+#define DRD_ADDRESS 0
 
 //#include "Defy.h"
 
@@ -41,8 +51,6 @@ typedef enum {
 
 class KZGwifi
 {
-String _confFileStr="/KZGwifi.json";
-KZGconfigFile _kzgConfigFile;
 //// wifi udp  ntp
 WiFiUDP ntpUDP;
 // By default 'time.nist.gov' is used with 60 seconds update interval and
@@ -55,48 +63,34 @@ NTPClient *timeClient;
 String ntp_server;
 unsigned long ntp_offset_h=2;
 
-String wifi_tryb;
+
+DoubleResetDetector drd;
+// Onboard LED I/O pin on NodeMCU board
+const int PIN_LED = 2; // D4 on NodeMCU and WeMos. Controls the onboard LED.
+
+// Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
+bool initialConfig = false;
   
 unsigned long lastWIFIReconnectAttempt = 0;
   
 unsigned long loopMillis=0;
   
-ESP8266WiFiMulti *wifiMulti;
-WiFiClient espClient;
-
-String ssidTab[MAX_SSID];
-String pwdTab[MAX_SSID];
-uint8_t ileSSID=0;
-
-//WiFiClient clientAP;
-String apName="apName";
-String apPwd="apPwd";
-
 uint8_t lastConnectedStatus;
   
 public:
-  KZGwifi(){};
-  void begin(String conffile="/KZGwifi.json");
-  void loop();
-  String loadConfigFile();
-  bool wifiConnected();
+  KZGwifi(){ drd= new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);};
+  void setNTP(String host,unsigned long offset_h);
+  void begin();
   String getWifiStatusString();
-  void initAP(String ssid,String pwd);
   bool getWifiStatusBuf(char *b);
-  uint8_t saveConfigFile(String confStr);
-  //int getConStat(){return conStat;};
+  bool wifiConnected();
+ 
+  void loop();
   String getTimeString(){return timeClient->getFormattedTime();};
   unsigned long getEpochTime(){return timeClient->getEpochTime();};
-  void wifiScanNetworks();
-  void wifiReconnect();
-  void setNTP(String host,unsigned long offset_h);
+  
   String getNTPjsonStr(){ return  String("{\"host\":\""+ntp_server+"\",\"offset\":"+String(ntp_offset_h)+"}");};
  // String getWifijsonStr(){ return String("{\"ssid\":\""+wifi_ssid+"\",\"pwd\":\""+wifi_pwd+"\",\"ip\":\""+wifi_ip+"\",\"tryb\":\""+wifi_tryb+"\"}");};
-  void dodajAP(String ssid,String pwd, bool dodajNaKoniec=true);
-  void dodajAP(String jsonString);  
-  void usunAP(String ssid);
-  String getConfigStr();
-  void parseConfigStr(String confStr);
-  void clearAPList();
+  
 };
 #endif
