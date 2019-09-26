@@ -5,6 +5,7 @@ void KZGmqtt::begin(String confFileStr)
   _clientMqtt.setClient(_espClient);
   _confFileStr = confFileStr;
   _kzgConfigFile.begin(_confFileStr);
+  _clientMqtt.setCallback(std::bind(&KZGmqtt::mqttCallBackOryginal, this));
 }
 
 void KZGmqtt::setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic)
@@ -15,7 +16,40 @@ void KZGmqtt::setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, Stri
   _debugTopic=debugTopic;
   _clientMqtt.setServer(_mqttServer.c_str(), _mqttPort);
 }
-void KZGmqtt::setCallback(MQTT_CALLBACK_SIGNATURE) {
+void KZGmqtt::mqttCallBackOryginal(char* topic, byte* payload, unsigned int length)
+{
+  char* p = (char*)malloc(length+1);
+  memcpy(p,payload,length);
+  p[length]='\0';
+  /*if(strstr(topic,"watchdog"))
+  {
+    DPRINT("Watchdog msg=");
+    DPRINT(p);
+    DPRINT(" teraz=");
+   
+    if(isNumber(p))
+      wifi.setWDmillis(strtoul (p, NULL, 0));
+    DPRINTLN(wifi.getWDmillis());
+    
+
+  }*/
+    if(topic[strlen(topic)-1]=='/')
+        {topic[strlen(topic)-1] = '\0';}
+    String topicStr=topic;
+    String msgStr=p;
+    free(p);
+    DPRINT("Debug: callback topic=");
+    DPRINT(topicStr);
+    DPRINT(" msg=");
+    DPRINTLN(msgStr);
+    _mqttCallBackFunc(topicStr,msgStr);
+    
+}
+void KZGmqtt::setCallback(KZG_MQTT_CALLBACK cb) {
+    _mqttCallBackFunc=cb;
+}
+
+void KZGmqtt::setCallbackOryginal(MQTT_CALLBACK_SIGNATURE callback) {
     _clientMqtt.setCallback(callback);
 }
 bool KZGmqtt::reconnectMQTT()

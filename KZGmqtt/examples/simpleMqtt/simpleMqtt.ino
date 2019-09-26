@@ -37,31 +37,26 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   free(p);
 }
 
+void mqttCallback(String topic, String msg)
+{
+  DPRINTLN("mqttCallback= topic: "+topic+", msg: "+msg);
+
+}
+
 void setup()
 {
     Serial.begin(115200);
-    wifi.begin();
-    String conf=wifi.loadConfigFile();
-    if(conf == "")  //brak pliku konfiguracyjnego
-    {
-        Serial.print("Przygotuj domyslny config");
-        wifi.clearAPList();
-        wifi.dodajAP("DOrangeFreeDom","KZagaw01_ruter_key");
-        wifi.initAP("TestWifiAP","qwerty");
-        conf = wifi.getConfigStr();
-        Serial.println("Zapis konfiguracji: "+wifi.saveConfigFile(conf));
-    }else
-    {
-        Serial.print("Wczytywanie konfiguracji");
-        wifi.parseConfigStr(conf);
-    }
+    wifi.begin("MqttTestAP");
+    
     mqtt.begin();
-    mqtt.setCallback(MQTTcallback);
+   // mqtt.setCallbackOryginal(MQTTcallback);
+    mqtt.setCallback(mqttCallback);
     String confMqtt=mqtt.loadConfigFile();
     if(confMqtt == "")
     {
         Serial.print("Przygotuj domyslny config MQTT");
-        mqtt.setMqtt("broker.hivemq.com",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
+        //mqtt.setMqtt("broker.hivemq.com",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
+        mqtt.setMqtt("192.168.1.132",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
         confMqtt=mqtt.getConfigStr();
         Serial.println("Zapis konfiguracji MQTT: "+ mqtt.saveConfigFile(confMqtt));
     }else

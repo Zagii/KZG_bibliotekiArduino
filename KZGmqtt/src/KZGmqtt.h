@@ -19,6 +19,8 @@
 
 #define MAX_TOPIC_LENGHT 100
 
+typedef void (*KZG_MQTT_CALLBACK)(String,String);
+
 class KZGmqtt
 {
 String _confFileStr="/KZGmqtt.json";
@@ -37,13 +39,20 @@ String _inTopic="";
 String _outTopic="";
 String _debugTopic="";
 
+//wskaznik na funkcje callback mqtt 
+KZG_MQTT_CALLBACK _mqttCallBackFunc;
+MQTT_CALLBACK_SIGNATURE mqttCallBackOryginal();
+
 public:
   KZGmqtt(){};
   void begin(String confFileStr = "/KZGmqtt.json");
   void loop();
   bool reconnectMQTT();
   void setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic);
-  void setCallback(MQTT_CALLBACK_SIGNATURE);
+ 
+  void setCallbackOryginal(MQTT_CALLBACK_SIGNATURE);
+  void setCallback(KZG_MQTT_CALLBACK);
+
   uint8_t saveConfigFile(String confStr);
   String loadConfigFile();
   String getConfigStr();
