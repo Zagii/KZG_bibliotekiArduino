@@ -51,14 +51,16 @@ void loop()
     wifi.loop();
     mqtt.loop();
     oneW.loop();
-    if(get18b20ready())
+    if(oneW.get18b20ready())
     {
+      oneW.set18b20notReady();
       DPRINT(" ************* oneWire Temperatures ready liczba: ");DPRINTLN(oneW.getDevicesCount());
       for(int i=0;i<oneW.getDevicesCount();i++)
       {
         DPRINT(" ** i= ");DPRINT(i);DPRINT(", addr: ");DPRINT(oneW.getDeviceAddresStr(i));DPRINT(", T=");DPRINT(oneW.getDeviceTemperature());DPRINTLN(" C");
       }
       DPRINTLN(" ************************ koniec ***************************** ");
+      
     }
     if(millis()-m>15000)
     {
