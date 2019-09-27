@@ -5,7 +5,8 @@ void KZGmqtt::begin(String confFileStr)
   _clientMqtt.setClient(_espClient);
   _confFileStr = confFileStr;
   _kzgConfigFile.begin(_confFileStr);
-  _clientMqtt.setCallback(std::bind(&KZGmqtt::mqttCallBackOryginal, this));
+ //PubSubClient* a=&_clientMqtt;
+  //a->setCallback(std::bind(&KZGmqtt::mqttCallBackOryginal, this));
 }
 
 void KZGmqtt::setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic)
@@ -49,8 +50,10 @@ void KZGmqtt::setCallback(KZG_MQTT_CALLBACK cb) {
     _mqttCallBackFunc=cb;
 }
 
-void KZGmqtt::setCallbackOryginal(MQTT_CALLBACK_SIGNATURE callback) {
+void KZGmqtt::setCallbackOryginal(MQTT_CALLBACK callback) {
     _clientMqtt.setCallback(callback);
+    uint8_t x[]="diudaads";
+    callback("test",x,8);
 }
 bool KZGmqtt::reconnectMQTT()
 {
@@ -130,12 +133,13 @@ void KZGmqtt::parseConfigStr(String confStr)
   _mqttUser   = mq["mqttUser"].as<char*>();    _mqttPwd = mq["mqttPwd"].as<char*>();
   _inTopic    = mq["inTopic"].as<char*>();     _outTopic = mq["outTopic"].as<char*>();
   _debugTopic = mq["debugTopic"].as<char*>();
-  
+  _clientMqtt.setServer(_mqttServer.c_str(), _mqttPort);
   DPRINTLN(F("Koniec parseConfigStr "));
 }
 
 void KZGmqtt::loop()
 {
+  _clientMqtt.loop();
   if (millis() - lastMQTTReconnectAttempt > 5000)
   {
     lastMQTTReconnectAttempt = millis();

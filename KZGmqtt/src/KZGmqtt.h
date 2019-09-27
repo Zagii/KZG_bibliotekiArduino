@@ -20,6 +20,7 @@
 #define MAX_TOPIC_LENGHT 100
 
 typedef void (*KZG_MQTT_CALLBACK)(String,String);
+typedef void (*MQTT_CALLBACK)(char*, uint8_t*, unsigned int);
 
 class KZGmqtt
 {
@@ -41,7 +42,7 @@ String _debugTopic="";
 
 //wskaznik na funkcje callback mqtt 
 KZG_MQTT_CALLBACK _mqttCallBackFunc;
-MQTT_CALLBACK_SIGNATURE mqttCallBackOryginal();
+void mqttCallBackOryginal(char*,byte *,unsigned int);
 
 public:
   KZGmqtt(){};
@@ -50,13 +51,15 @@ public:
   bool reconnectMQTT();
   void setMqtt(String mqttServer,uint16_t mqttPort, String mqttUser, String mqttPwd, String inTopic, String outTopic, String debugTopic);
  
-  void setCallbackOryginal(MQTT_CALLBACK_SIGNATURE);
-  void setCallback(KZG_MQTT_CALLBACK);
+  void setCallbackOryginal(MQTT_CALLBACK callback);
+  void setCallback(KZG_MQTT_CALLBACK callback);
 
   uint8_t saveConfigFile(String confStr);
   String loadConfigFile();
   String getConfigStr();
   void parseConfigStr(String confStr);
   void mqttPub(String topic, String msq, bool cisza=false);
+
+ // PubSubClient* getMqttObj(){return &_clientMqtt;};
 };
 #endif
