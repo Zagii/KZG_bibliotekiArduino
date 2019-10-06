@@ -14,8 +14,24 @@ KZGwifi wifi;
 KZGmqtt mqtt;
 KZGoneWireDev oneW;
 
+void MQTTcallback(char* topic, byte* payload, unsigned int length) 
+{
+  DPRINTLN("MQTTcallback");
+  char* p = (char*)malloc(length+1);
+  memcpy(p,payload,length);
+  p[length]='\0';
+  
+  if(topic[strlen(topic)-1]=='/')
+    {topic[strlen(topic)-1] = '\0';}
+  String topicStr=topic;
+  String msgStr=p;
+  free(p);
+  DPRINT("Debug: callback topic=");  DPRINT(topicStr);
+  DPRINT(" msg=");    DPRINTLN(msgStr);    DPRINTLN(p);
+  mqttCallbackStr(topic,p);
+}
 
-void mqttCallback(String topic, String msg)
+void mqttCallbackStr(String topic, String msg)
 {
   DPRINTLN("mqttCallback= topic: "+topic+", msg: "+msg);
 
@@ -27,22 +43,8 @@ void setup()
     wifi.begin("MqttTestAP");
     
     mqtt.begin();
-   // mqtt.setCallbackOryginal(MQTTcallback);
-    mqtt.setCallback(mqttCallback);
-    String confMqtt=mqtt.loadConfigFile();
-    if(confMqtt == "")
-    {
-        Serial.print("Przygotuj domyslny config MQTT");
-        //mqtt.setMqtt("broker.hivemq.com",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
-        mqtt.setMqtt("192.168.1.132",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
-        confMqtt=mqtt.getConfigStr();
-        Serial.println("Zapis konfiguracji MQTT: "+ mqtt.saveConfigFile(confMqtt));
-    }else
-    {
-        Serial.print("Wczytywanie konfiguracji MQTT");
-        mqtt.parseConfigStr(confMqtt);
-    }
-
+    mqtt.setCallbackOryginal(MQTTcallback);
+    mqtt.setMqtt("qnap",1883,"ESP","","KZGmqttTestIN","KZGmqttTestOUT","KZGmqttDebug");
     oneW.begin(D4,12,20000); // pin, precyzja, co ile mierzyc
     Serial.println("Koniec Setup"); 
 }
