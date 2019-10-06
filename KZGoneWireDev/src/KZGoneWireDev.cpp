@@ -1,23 +1,24 @@
 #include "KZGoneWireDev.h"
 
-void KZGoneWireDev::begin(uint8_t 1w_pin,uint8_t ds18b20precision, unsigned long tempFreq)
+void KZGoneWireDev::begin(uint8_t x1w_pin,uint8_t ds18b20precision, unsigned long tempFreq)
 {
   DPRINTLN("Debug KZGoneWireDev::begin start"); 
-  _1w_pin=1w_pin;
+  _1w_pin=x1w_pin;
   _ds18b20precision=ds18b20precision;
   _tempFreq=tempFreq;
   _18b20ready=false;
   _termometerWaiting=false;
-  if(_sensor.millisToWaitForConversion(_ds18b20precision)<_tempFreq)
+  
+  _oneWire=new OneWire(_1w_pin);
+  _sensors= new DallasTemperature(_oneWire);
+ 
+  if(_sensors->millisToWaitForConversion(_ds18b20precision)<_tempFreq)
   {
     DPRINT("UWAGA: zabyt czeste probkowanie!! precyzja: ");DPRINT(_ds18b20precision);
-    DPRINT(", min czas: ");DPRINT(_sensor.millisToWaitForConversion(_ds18b20precision));
+    DPRINT(", min czas: ");DPRINT(_sensors->millisToWaitForConversion(_ds18b20precision));
     DPRINT(", oczekiwana czestotliwosc"); DPRINTLN(_tempFreq);
   }
 
-  _oneWire(_1w_pin);
-  _sensors(&_oneWire);
- 
   checkNewTermometers();
   DPRINTLN("Debug KZGoneWireDev::begin end"); 
 }
@@ -30,20 +31,20 @@ void KZGoneWireDev::loop()
   //cyklicznie inicjuj pomiar temperatury
   if(millis()-_lastTempMeasure>_tempFreq)
   {
-    sensors.requestTemperatures();
+    _sensors->requestTemperatures();
     _termometerWaiting=true;
     _lastTempMeasure=millis();
   }
 
   // gdy minie czas na konwersje odczytaj temperatury
-  if((millis()-_lastTempMeasure>_sensor.millisToWaitForConversion(_ds18b20precision)) && _termometerWaiting)
+  if((millis()-_lastTempMeasure>_sensors->millisToWaitForConversion(_ds18b20precision)) && _termometerWaiting)
   {
     _termometerWaiting=false;
 
     for(int i=0;i<_numberOfDevices; i++)
     {
-      _temperaturaC[i]= _sensors.getTempC(_tempDeviceAddress[i]);
-      if(tempC == DEVICE_DISCONNECTED_C) 
+      _temperaturaC[i]= _sensors->getTempC(_tempDeviceAddress[i]);
+      if( _temperaturaC[i] == DEVICE_DISCONNECTED_C) 
       {
         DPRINT("Err: problem z termometrem i=");DPRINT(i);DPRINT(", addr:");DPRINTLN(printAddressToStr(_tempDeviceAddress[i]));
        
@@ -74,22 +75,22 @@ String KZGoneWireDev::printAddressToStr(DeviceAddress deviceAddress)
 
 void KZGoneWireDev::checkNewTermometers()
 {
-  _sensors.begin();
-  _sensors.setResolution(_ds18b20precision);
-  _sensors.setWaitForConversion(false);
-  _numberOfDevices = _sensors.getDeviceCount();
+  _sensors->begin();
+  _sensors->setResolution(_ds18b20precision);
+  _sensors->setWaitForConversion(false);
+  _numberOfDevices = _sensors->getDeviceCount();
   if(_numberOfDevices>MAX_TERMOMETERS)_numberOfDevices=MAX_TERMOMETERS;
   
   // Loop through each device, print out address
   for(int i=0;i<_numberOfDevices; i++)
   {
     // Search the wire for address
-    if(_sensors.getAddress(_tempDeviceAddress[i], i))
+    if(_sensors->getAddress(_tempDeviceAddress[i], i))
 	  {
       DPRINT("Found device ");
       DPRINT(i, DEC);
       DPRINT(" with address: ");
-      DPRINTLN(printAddressToStr(tempDeviceAddress));
+      DPRINTLN(printAddressToStr(_tempDeviceAddress[i]));
       
     }else{
       DPRINT("Found ghost device at ");

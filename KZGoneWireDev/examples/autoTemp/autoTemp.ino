@@ -6,6 +6,8 @@
 
 #include <KZGwifi.h>
 #include <KZGmqtt.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 #include <KZGoneWireDev.h>
 
 KZGwifi wifi;
@@ -57,7 +59,7 @@ void loop()
       DPRINT(" ************* oneWire Temperatures ready liczba: ");DPRINTLN(oneW.getDevicesCount());
       for(int i=0;i<oneW.getDevicesCount();i++)
       {
-        DPRINT(" ** i= ");DPRINT(i);DPRINT(", addr: ");DPRINT(oneW.getDeviceAddresStr(i));DPRINT(", T=");DPRINT(oneW.getDeviceTemperature());DPRINTLN(" C");
+        DPRINT(" ** i= ");DPRINT(i);DPRINT(", addr: ");DPRINT(oneW.getDeviceAddresStr(i));DPRINT(", T=");DPRINT(oneW.getDeviceTemperature(i));DPRINTLN(" C");
       }
       DPRINTLN(" ************************ koniec ***************************** ");
       

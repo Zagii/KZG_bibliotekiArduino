@@ -20,24 +20,25 @@ class KZGoneWireDev
 {
   uint8_t _1w_pin;
   uint8_t _ds18b20precision;
-  OneWire _oneWire;
-  DallasTemperature _sensors;
+  OneWire* _oneWire;
+  DallasTemperature* _sensors;
   unsigned long _tempFreq;
   unsigned long _lastTempMeasure;
   bool _termometerWaiting=false;
   int _numberOfDevices; 
   DeviceAddress _tempDeviceAddress[MAX_TERMOMETERS+1];
-  float _temperaturaC[MAX_TERMOMETERS+1];
+  double _temperaturaC[MAX_TERMOMETERS+1];
   bool _18b20ready; // oznacza ze wlasnie pojawily sie nowe odczyty temperatur
 
-  printAddressToStr(DeviceAddress deviceAddress);
+  String printAddressToStr(DeviceAddress deviceAddress);
 public:
   KZGoneWireDev(){};
-  void begin(uint8_t 1w_pin,uint8_t ds18b20precision, unsigned long tempFreq);
+  void loop();
+  void begin(uint8_t x1w_pin,uint8_t ds18b20precision, unsigned long tempFreq);
   void checkNewTermometers();
   int getDevicesCount(){return _numberOfDevices;}
   String getDeviceAddresStr(int id){return printAddressToStr(_tempDeviceAddress[id]);}
-  float getDeviceTemperature(int id){return _temperaturaC[id];}
+  double getDeviceTemperature(int id){return _temperaturaC[id];}
   void set18b20notReady(){ _18b20ready=false;}
   bool get18b20ready(){return _18b20ready;}
 };
