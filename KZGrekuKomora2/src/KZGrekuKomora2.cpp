@@ -1,6 +1,6 @@
 #include "KZGrekuKomora2.h"
 
-KZGrekuKomora2::KZGrekuKomora2(uint8_t id, uint8_t* termAddr)
+KZGrekuKomora2::KZGrekuKomora2(uint8_t id, DeviceAddress* termAddr)
 {
     _id=id;
     _termAddr=termAddr;
@@ -30,7 +30,7 @@ void KZGrekuKomora2::pomiarCisnienia(){}
 void KZGrekuKomora2::pomiarWilgotnosci(){}
 
 // function to print a device address
-void KZGrekuKomora2::printAddress(uint8_t* deviceAddress,char * buf)
+void KZGrekuKomora2::printAddress(DeviceAddress* deviceAddress,char * buf)
 {
   strcpy(buf,"");
   char tmp[4];
@@ -43,7 +43,7 @@ void KZGrekuKomora2::printAddress(uint8_t* deviceAddress,char * buf)
     strcat(buf,tmp);
   }
 }
-void KZGrekuKomora2::printAddressToStr(uint8_t* deviceAddress)
+void KZGrekuKomora2::printAddressToStr(DeviceAddress* deviceAddress)
 {
   _addresString="";
   //strcpy(buf,"");

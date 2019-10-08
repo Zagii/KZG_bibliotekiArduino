@@ -104,15 +104,16 @@ uint8_t KZGmqtt::saveConfigFile(String confStr)
 
 String KZGmqtt::getConfigStr()
 {
-  DynamicJsonBuffer jb;
-  JsonObject &root = jb.createObject();
-  JsonObject &mq = root.createNestedObject("MQTT");
+  DynamicJsonDocument jb(200);
+  JsonObject root = jb.to<JsonObject>();
+  JsonObject mq = root.createNestedObject("MQTT");
   mq["mqttServer"] = _mqttServer;   mq["mqttPort"] = _mqttPort;
   mq["mqttUser"]   = _mqttUser;     mq["mqttPwd"]  = _mqttPwd;
   mq["inTopic"]    = _inTopic;      mq["outTopic"] = _outTopic;
   mq["debugTopic"] = _debugTopic;
   String wynik;
-  root.printTo(wynik);
+  //root.printTo(wynik);
+  serializeJson(jb, wynik);
   DPRINT(F("KZGmqtt::getConfigStr: "));DPRINTLN(wynik);
   return wynik;
 }
@@ -121,14 +122,15 @@ void KZGmqtt::parseConfigStr(String confStr)
 {
   DPRINT(F("KZGmqtt::parseConfigStr: ")); DPRINTLN(confStr);
 
-  DynamicJsonBuffer jb;
-  JsonObject& root = jb.parseObject(confStr);
-  if (!root.success())
+  DynamicJsonDocument jb(200);
+  DeserializationError error =deserializeJson(jb, confStr);
+  if (error)
   {
      DPRINT(F("Blad parsowania confStr"));
      return;
   }
-  JsonObject& mq=root["MQTT"];
+  JsonObject mq = jb["MQTT"];
+  //JsonObject& mq=root["MQTT"];
   _mqttServer = mq["mqttServer"].as<char*>();  _mqttPort = mq["mqttPort"];
   _mqttUser   = mq["mqttUser"].as<char*>();    _mqttPwd = mq["mqttPwd"].as<char*>();
   _inTopic    = mq["inTopic"].as<char*>();     _outTopic = mq["outTopic"].as<char*>();

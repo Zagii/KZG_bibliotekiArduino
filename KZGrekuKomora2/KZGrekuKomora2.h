@@ -2,13 +2,12 @@
 #define KZGrekuKomora_h
 #include "arduino.h"
 
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <KZGoneWireDev.h>
-
 
 //#define PIN_ONEWIRE D7
-#define TEMPERATURE_PRECISION 9//12//9
+#define TEMPERATURE_PRECISION 12//9
 
 //static OneWire oneWire(PIN_ONEWIRE);  //statyczne?
 //static DallasTemperature sensors(&oneWire); //statyczne?
@@ -29,8 +28,8 @@ Device Address: 285296230600005C Temp C: 25.50 Temp F: 77.90
 Device Address: 28BEDA21060000C7 Temp C: 25.50 Temp F: 77.90
  */
 
-#define DEBUG_KZGKOMORA
-//#undef DEBUG_KZGKOMORA   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+//#define DEBUG_KZGKOMORA
+#undef DEBUG_KZGKOMORA   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
 #ifdef DEBUG_KZGKOMORA    //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
   #define DPRINTLN(...)  Serial.println(__VA_ARGS__)   //DPRINTLN is a macro, debug print with new line
@@ -48,7 +47,7 @@ Device Address: 28BEDA21060000C7 Temp C: 25.50 Temp F: 77.90
   #define IPRINTLN(...)   //now defines a blank line
 #endif
 
-class KZGrekuKomora2
+class KZGrekuKomora
 {
     unsigned long _tempMillis;  // licznik przechowujący millis dla termometru
     uint8_t _id;                // unikalny id komory
@@ -57,33 +56,27 @@ class KZGrekuKomora2
     uint8_t _wilgotnosc=0;      // nic nie robi
     //uint8_t co2=0;
       
-    KZGoneWireDev* _oneWire;
+    OneWire* _oneWire;
     DeviceAddress* _termAddr;   // adres termometru na 1w magistrali
+    DallasTemperature _dsTermometr; //obiekt terometru
     void pomiarTemp();
     void pomiarCisnienia();
     void pomiarWilgotnosci();
     //void pomiarCO2();
-    char addressStr[20];
-	String _addresString;
+    char addressStr[17];
   //  unsigned long _ms=0; //czas ms
-    bool _connected=false;
-
-    // flaga mowiaca czy od ostatniego dajTemp zmienila sie temperatura
-    bool _tempChg=false; 
-
+   
+    
 	public:
-    KZGrekuKomora2(uint8_t id, DeviceAddress* termAddr);
-    void printAddress(DeviceAddress* deviceAddress,char* buf);
-	void printAddressToStr(DeviceAddress* deviceAddress);
+    KZGrekuKomora(uint8_t id, DeviceAddress* termAddr);
+    void printAddress(DeviceAddress deviceAddress,char* buf);
     char *getTempAddress(){return addressStr;}
-    void begin(KZGoneWireDev* oneWire);
+    void begin(OneWire* oneWire);
     void loop();
-    double dajTemp(){ _tempChg=false; return _temp;}
+    double dajTemp(){return _temp;}
     double dajCisnienie(){ return _cisnienie;}
   	uint8_t dajWilgotnosc(){return _wilgotnosc;}
-    void setTemp(double t){if(abs(_temp-t)>0.3){_tempChg=true;}_temp=t; }
     String getStatusString();
-    bool isTempChg(){return _tempChg;}
 };
 
 
